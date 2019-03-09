@@ -9,15 +9,13 @@ package com.freneticllc.freneticutilities.freneticdatasyntax;
 /**
  * Represents an exception throw while inputting data to an FDS section.
  */
-public class FDSInputException : Exception
-{
+public class FDSInputException : Exception {
     /**
      * Construct the FDS exception.
      */
      * @param message The message explaining the error.
     public FDSInputException(String message)
-        : base(message)
-    {
+        : base(message) {
         // No init needed.
     }
 }

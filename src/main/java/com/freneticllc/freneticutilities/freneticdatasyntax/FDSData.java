@@ -9,8 +9,7 @@ package com.freneticllc.freneticutilities.freneticdatasyntax;
 /**
  * Represents a piece of data within an FDS Section.
  */
-public class FDSData
-{
+public class FDSData {
     /**
      * The list of comments preceding this data piece.
      */
@@ -20,8 +19,7 @@ public class FDSData
      * Adds a preceding comment to this data piece.
      */
      * @param comment The comment to add.
-    public void AddComment(String comment)
-    {
+    public void AddComment(String comment) {
         comment = comment.Replace("\r", "");
         PrecedingComments.AddRange(comment.Split('\n').Select(str => str.TrimEnd()));
     }
@@ -35,23 +33,18 @@ public class FDSData
      * Returns the output-able String representation of this data.
      */
      * @return The resultant data.
-    public String Outputable()
-    {
-        if (Internal is ArrayList<FDSData> list)
-        {
+    public String Outputable() {
+        if (Internal is ArrayList<FDSData> list) {
             StringBuilder outputBuilder = new StringBuilder();
-            foreach (FDSData dat in list)
-            {
+            foreach (FDSData dat in list) {
                 outputBuilder.Append(dat.Outputable()).Append('|');
             }
             return outputBuilder.ToString();
         }
-        if (Internal is byte[])
-        {
+        if (Internal is byte[]) {
             return Convert.ToBase64String((byte[])Internal, Base64FormattingOptions.None);
         }
-        if (Internal is bool)
-        {
+        if (Internal is bool) {
             return ((bool)Internal) ? "true" : "false";
         }
         return FDSUtility.Escape(Internal.ToString());

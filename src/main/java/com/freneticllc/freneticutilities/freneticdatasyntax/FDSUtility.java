@@ -9,8 +9,7 @@ package com.freneticllc.freneticutilities.freneticdatasyntax;
 /**
  * Utilities for the FreneticDataSyntax engine.
  */
-public class FDSUtility
-{
+public class FDSUtility {
     /**
      * The default splitter character for section paths.
      * To change to or a custom default, use "DefaultSectionPathSplit".
@@ -33,8 +32,7 @@ public class FDSUtility
      */
      * @param fname The name of the file to read.
      * @return An "FDSSection" containing the same data as the file (if successfully read).
-    public static FDSSection ReadFile(String fname)
-    {
+    public static FDSSection ReadFile(String fname) {
         return new FDSSection(StringConversionHelper.UTF8Encoding.GetString(File.ReadAllBytes(fname)));
     }
 
@@ -44,8 +42,7 @@ public class FDSUtility
      */
      * @param section The data to save.
      * @param fname The name of the file to read.
-    public static void SaveToFile(this FDSSection section, String fname)
-    {
+    public static void SaveToFile(this FDSSection section, String fname) {
         File.WriteAllBytes(fname, StringConversionHelper.UTF8Encoding.GetBytes(section.SaveToString()));
     }
 
@@ -56,10 +53,8 @@ public class FDSUtility
      */
      * @param inputString The input String to convert.
      * @return The byte array output.
-    public static byte[] FromBase64(String inputString)
-    {
-        if (inputString.Length == 0)
-        {
+    public static byte[] FromBase64(String inputString) {
+        if (inputString.Length == 0) {
             return EMPTY_BYTES;
         }
         return Convert.FromBase64String(inputString);
@@ -70,15 +65,12 @@ public class FDSUtility
      */
      * @param contents The original file data.
      * @return The cleaned file data.
-    public static String CleanFileData(String contents)
-    {
-        if (contents.Contains("\r\n"))
-        {
+    public static String CleanFileData(String contents) {
+        if (contents.Contains("\r\n")) {
             // Windows to Unix
             contents = contents.Replace("\r", "");
         }
-        else
-        {
+        else {
             // Old Mac to Unix (leaves Unix form unaltered)
             contents = contents.Replace('\r', '\n');
         }
@@ -91,15 +83,12 @@ public class FDSUtility
      */
      * @param str The String to escape.
      * @return The escaped String.
-    public static String Escape(String str)
-    {
+    public static String Escape(String str) {
         str = str.Replace("\\", "\\\\").Replace("\t", "\\t").Replace("\n", "\\n").Replace("\r", "\\r");
-        if (str.EndWithFast(' '))
-        {
+        if (str.EndWithFast(' ')) {
             str = str + "\\x";
         }
-        if (str.StartsWithFast(' '))
-        {
+        if (str.StartsWithFast(' ')) {
             str = "\\x" + str;
         }
         return str;
@@ -110,8 +99,7 @@ public class FDSUtility
      */
      * @param str The String to escape.
      * @return The escaped String.
-    public static String EscapeKey(String str)
-    {
+    public static String EscapeKey(String str) {
         return Escape(str).Replace(".", "\\d").Replace(":", "\\c").Replace("=", "\\e");
     }
 
@@ -121,8 +109,7 @@ public class FDSUtility
      */
      * @param str The String to unescape.
      * @return The unescaped String.
-    public static String UnEscape(String str)
-    {
+    public static String UnEscape(String str) {
         str = str.Replace("\\t", "\t").Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\x", "").Replace("\\\\", "\\");
         return str;
     }
@@ -132,8 +119,7 @@ public class FDSUtility
      */
      * @param str The String to unescape.
      * @return The unescaped String.
-    public static String UnEscapeKey(String str)
-    {
+    public static String UnEscapeKey(String str) {
         return UnEscape(str.Replace("\\d", ".").Replace("\\c", ":").Replace("\\e", "="));
     }
 
@@ -142,22 +128,17 @@ public class FDSUtility
      */
      * @param input The input text.
      * @return The correctly typed result.
-    public static object InterpretType(String input)
-    {
-        if (long.TryParse(input, out long aslong) && aslong.ToString() == input)
-        {
+    public static object InterpretType(String input) {
+        if (long.TryParse(input, out long aslong) && aslong.ToString() == input) {
             return aslong;
         }
-        if (double.TryParse(input, out double asdouble) && asdouble.ToString() == input)
-        {
+        if (double.TryParse(input, out double asdouble) && asdouble.ToString() == input) {
             return asdouble;
         }
-        if (input == "true")
-        {
+        if (input == "true") {
             return true;
         }
-        if (input == "false")
-        {
+        if (input == "false") {
             return false;
         }
         return input;
