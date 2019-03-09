@@ -6,6 +6,8 @@
 
 package com.freneticllc.freneticutilities.freneticdatasyntax;
 
+import java.util.*;
+
 /**
  * Represents a FreneticDataSyntax section or file.
  */
@@ -13,132 +15,125 @@ public class FDSSection {
 
     /**
      * Constructs the FDS Section from textual data.
-     */
      * @param contents The contents of the data file.
+     */
     public FDSSection(String contents) {
-        StartingLine = 1;
-        contents = FDSUtility.CleanFileData(contents);
-        HashMap<int, FDSSection> spacedsections = new HashMap<int, FDSSection>() { { 0, this } };
-        ArrayList<String> ccomments = new ArrayList<String>();
-        ArrayList<String> seccomments = new ArrayList<String>();
+        startingLine = 1;
+        contents = FDSUtility.cleanFileData(contents);
+        HashMap<Integer, FDSSection> spacedsections = new HashMap<>();
+        spacedsections.put(0, this);
+        ArrayList<String> ccomments = new ArrayList<>();
+        ArrayList<String> seccomments = new ArrayList<>();
         FDSSection csection = this;
-        String[] data = contents.SplitFast('\n');
+        String[] data = FDSUtility.split(contents, '\n');
         int pspaces = 0;
         String secwaiting = null;
         ArrayList<FDSData> clist = null;
-        for (int i = 0; i < data.Length; i++) {
+        for (int i = 0; i < data.length; i++) {
             String line = data[i];
             int spaces;
-            for (spaces = 0; spaces < line.Length; spaces++) {
-                if (line[spaces] != ' ') {
+            for (spaces = 0; spaces < line.length(); spaces++) {
+                if (line.charAt(spaces) != ' ') {
                     break;
                 }
             }
-            if (spaces == line.Length) {
+            if (spaces == line.length()) {
                 continue;
             }
-            String datum = line.SubString(spaces).TrimEnd(' ');
-            if (datum.StartsWith("#")) {
-                ccomments.Add(datum.SubString(1));
+            String datum = FDSUtility.trimEnd(line.substring(spaces));
+            if (datum.startsWith("#")) {
+                ccomments.add(datum.substring(1));
                 continue;
             }
             if (spaces < pspaces) {
-                if (spacedsections.TryGetValue(spaces, out FDSSection temp)) {
+                FDSSection temp = spacedsections.get(spaces);
+                if (temp != null) {
                     csection = temp;
-                    foreach (int test in new ArrayList<int>(spacedsections.Keys)) {
+                    for (int test : new ArrayList<Integer>(spacedsections.keySet())) {
                         if (test > spaces) {
-                            spacedsections.Remove(test);
+                            spacedsections.remove(test);
                         }
                     }
                 }
                 else {
-                    Exception(i, line, "Spaced incorrectly. Spacing length is less than previous spacing length,"
-                        + "but does not match the spacing value of any known section, valid: "
-                        + String.Join(" / ", spacedsections.Keys) + ", found: " + spaces + ", was: " + pspaces);
+                    exception(i, line, "Spaced incorrectly. Spacing length instanceof less than previous spacing length,"
+                            + "but does not match the spacing value of any known section, valid: "
+                            + FDSUtility.join(" / ", spacedsections.keySet()) + ", found: " + spaces + ", was: " + pspaces);
                 }
             }
-            if (datum[0] == '-' || datum[0] == '=') {
-                String clistline = datum.SubString(1).TrimStart(' ');
+            if (datum.charAt(0) == '-' || datum.charAt(0) == '=') {
+                String clistline = FDSUtility.trimStart(datum.substring(1));
                 if (clist == null) {
                     if (spaces >= pspaces && secwaiting != null) {
-                        clist = new ArrayList<FDSData>();
-                        csection.SetRootData(FDSUtility.UnEscapeKey(secwaiting), new FDSData() { PrecedingComments = new ArrayList<String>(seccomments), Internal = clist });
-                        seccomments.Clear();
+                        clist = new ArrayList<>();
+                        csection.setRootData(FDSUtility.unEscapeKey(secwaiting), new FDSData(clist, new ArrayList<>(seccomments)));
+                        seccomments.clear();
                         secwaiting = null;
                     }
                     else {
-                        Exception(i, line, "Line purpose unknown, attempted list entry when not building a list");
+                        exception(i, line, "Line purpose unknown, attempted list entry when not building a list");
                     }
                 }
-                String unescaped = FDSUtility.UnEscape(clistline);
-                clist.Add(new FDSData() {
-                    PrecedingComments = new ArrayList<String>(ccomments),
-                    Internal = datum[0] == '=' ? FDSUtility.FromBase64(unescaped) : FDSUtility.InterpretType(unescaped)
-                });
-                ccomments.Clear();
+                String unescaped = FDSUtility.unEscape(clistline);
+                clist.add(new FDSData(datum.charAt(0) == '=' ? Base64.getDecoder().decode(unescaped) : FDSUtility.interpretType(unescaped),
+                        new ArrayList<>(ccomments)));
+                ccomments.clear();
                 continue;
             }
             clist = null;
             String startofline = "";
             String endofline = "";
             char type = '\0';
-            for (int spot = 0; spot < datum.Length; spot++) {
-                if (datum[spot] == ':' || datum[spot] == '=') {
-                    type = datum[spot];
-                    startofline = datum.SubString(0, spot);
-                    endofline = spot == datum.Length - 1 ? "": datum.SubString(spot + 1);
+            for (int spot = 0; spot < datum.length(); spot++) {
+                if (datum.charAt(spot) == ':' || datum.charAt(spot) == '=') {
+                    type = datum.charAt(spot);
+                    startofline = datum.substring(0, spot);
+                    endofline = spot == datum.length() - 1 ? "": datum.substring(spot + 1);
                     break;
                 }
             }
-            endofline = endofline.TrimStart(' ');
+            endofline = FDSUtility.trimStart(endofline);
             if (type == '\0') {
-                Exception(i, line, "Line purpose unknown");
+                exception(i, line, "Line purpose unknown");
             }
-            if (startofline.Length == 0) {
-                Exception(i, line, "Empty key label!");
+            if (startofline.length() == 0) {
+                exception(i, line, "Empty key label!");
             }
             if (spaces > pspaces && secwaiting != null) {
                 FDSSection sect = new FDSSection();
-                csection.SetRootData(FDSUtility.UnEscapeKey(secwaiting), new FDSData() {
-                    PrecedingComments = new ArrayList<String>(seccomments),
-                    Internal = sect
-                });
-                seccomments.Clear();
+                csection.setRootData(FDSUtility.unEscapeKey(secwaiting), new FDSData(sect, new ArrayList<>(seccomments)));
+                seccomments.clear();
                 csection = sect;
-                spacedsections[spaces] = sect;
+                spacedsections.put(spaces, sect);
                 secwaiting = null;
             }
             if (type == '=') {
-                csection.SetRootData(FDSUtility.UnEscapeKey(startofline), new FDSData() {
-                    PrecedingComments = new ArrayList<String>(ccomments),
-                    Internal = FDSUtility.FromBase64(FDSUtility.UnEscape(endofline))
-                });
-                ccomments.Clear();
+                csection.setRootData(FDSUtility.unEscapeKey(startofline), new FDSData(
+                        Base64.getDecoder().decode(FDSUtility.unEscape(endofline)), new ArrayList<>(ccomments)));
+                ccomments.clear();
             }
             else if (type == ':') {
-                if (endofline.Length == 0) {
+                if (endofline.length() == 0) {
                     secwaiting = startofline;
                     seccomments = new ArrayList<String>(ccomments);
-                    ccomments.Clear();
+                    ccomments.clear();
                 }
                 else {
-                    csection.SetRootData(FDSUtility.UnEscapeKey(startofline), new FDSData() {
-                        PrecedingComments = new ArrayList<String>(ccomments),
-                        Internal = FDSUtility.InterpretType(FDSUtility.UnEscape(endofline))
-                    });
-                    ccomments.Clear();
+                    csection.setRootData(FDSUtility.unEscapeKey(startofline), new FDSData(
+                            FDSUtility.interpretType(FDSUtility.unEscape(endofline)), new ArrayList<>(ccomments)));
+                    ccomments.clear();
                 }
             }
             else {
-                Exception(i, line, "Internal issue: unrecognize 'type' value: " + type);
+                exception(i, line, "Internal issue: unrecognize 'type' value: " + type);
             }
             pspaces = spaces;
         }
-        PostComments.AddRange(ccomments);
+        postComments.addAll(ccomments);
     }
 
-    private void Exception(int linenumber, String line, String reason) {
-        throw new Exception("[FDS Parsing error] Line " + (linenumber + 1) + ": " + reason + ", from line as follows: `" + line + "`");
+    private void exception(int linenumber, String line, String reason) {
+        throw new RuntimeException("[FDS Parsing error] Line " + (linenumber + 1) + ": " + reason + ", from line as follows: `" + line + "`");
     }
 
     /**
@@ -153,52 +148,52 @@ public class FDSSection {
      * Note that files start at 1.
      * Only accurate at file-load time.
      */
-    public int StartingLine = 0;
+    public int startingLine = 0;
 
     /**
      * All data contained by this section.
      */
-    public HashMap<String, FDSData> Data = new HashMap<String, FDSData>();
+    public HashMap<String, FDSData> data = new HashMap<>();
 
     /**
      * Lowercase-stored data for this section.
      */
-    public HashMap<String, FDSData> DataLowered = new HashMap<String, FDSData>();
+    public HashMap<String, FDSData> dataLowered = new HashMap<>();
 
     /**
      * Comments at the end of the section (usually only on the file root section).
      */
-    public ArrayList<String> PostComments = new ArrayList<String>();
+    public ArrayList<String> postComments = new ArrayList<>();
 
     /**
      * The section path splitter for this section.
      * Will initially hold a value obtained from "FDSUtility.DefaultSectionPathSplit" at instance construction time.
-     * That field is initially a dot value. Altering that default or this value may cause issues (in particular with escaping) depending on the chosen value.
+     * That field instanceof initially a dot value. Altering that default or this value may cause issues (in particular with escaping) depending on the chosen value.
      */
-    public char SectionPathSplit = FDSUtility.DefaultSectionPathSplit;
+    public char sectionPathSplit = FDSUtility.defaultSectionPathSplit;
 
     /**
      * Returns the set of all keys at the root of this section.
-     */
      * @return All keys.
-    public Set<String> GetRootKeys() {
-        return Data.Keys;
+     */
+    public Set<String> getRootKeys() {
+        return data.keySet();
     }
 
     /**
      * Gets a String from the section. Can Stringify non-String values.
      * Returns null if not found.
-     */
      * @param key The key to get data from.
      * @return The data found, or the default.
-    public ArrayList<String> GetStringList(String key) {
-        ArrayList<FDSData> dat = GetDataList(key);
+     */
+    public ArrayList<String> getStringList(String key) {
+        ArrayList<FDSData> dat = getDataList(key);
         if (dat == null) {
             return null;
         }
-        ArrayList<String> newlist = new ArrayList<String>(dat.Count);
-        for (int i = 0; i < dat.Count; i++) {
-            newlist.Add(dat[i].Internal.ToString());
+        ArrayList<String> newlist = new ArrayList<>(dat.size());
+        for (int i = 0; i < dat.size(); i++) {
+            newlist.add(dat.get(i).internal.toString());
         }
         return newlist;
     }
@@ -206,76 +201,108 @@ public class FDSSection {
     /**
      * Gets a String from the section. Can Stringify non-String values.
      * Returns null if not found.
-     */
      * @param key The key to get data from.
      * @return The data found, or the default.
-    public ArrayList<FDSData> GetDataList(String key) {
-        FDSData got = GetData(key);
+     */
+    public ArrayList<FDSData> getDataList(String key) {
+        FDSData got = getData(key);
         if (got == null) {
             return null;
         }
-        object o = got.Internal;
-        if (o is ArrayList<FDSData> asList) {
-            return asList;
+        Object o = got.internal;
+        if (o instanceof ArrayList) {
+            return (ArrayList<FDSData>) o;
         }
         else {
-            return new ArrayList<FDSData>() { got };
+            ArrayList<FDSData> output = new ArrayList<>();
+            output.add(got);
+            return output;
         }
     }
 
     /**
-     * Gets a bool from the section.
+     * Gets a boolean from the section.
      * Returns def if not found.
+     * @param key The key to get data from.
+     * @return The data found, or the default.
      */
+    public Boolean getBoolean(String key) {
+        return getBoolean(key, null);
+    }
+
+    /**
+     * Gets a boolean from the section.
+     * Returns def if not found.
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public bool? GetBool(String key, bool? def = null) {
-        FDSData got = GetData(key);
+     */
+    public Boolean getBoolean(String key, Boolean def) {
+        FDSData got = getData(key);
         if (got == null) {
             return def;
         }
-        object o = got.Internal;
-        if (o is bool asBool) {
-            return asBool;
+        Object o = got.internal;
+        if (o instanceof Boolean) {
+            return (Boolean)o;
         }
         else {
-            return o.ToString().ToLowerFast() == "true";
+            return FDSUtility.toLowerCase(o.toString()).equals("true");
         }
     }
 
     /**
      * Gets a String from the section. Can Stringify non-String values.
      * Returns def if not found.
+     * @param key The key to get data from.
+     * @return The data found, or the default.
      */
+    public String getString(String key) {
+        return getString(key, null);
+    }
+
+    /**
+     * Gets a String from the section. Can Stringify non-String values.
+     * Returns def if not found.
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public String GetString(String key, String def = null) {
-        FDSData got = GetData(key);
+     */
+    public String getString(String key, String def) {
+        FDSData got = getData(key);
         if (got == null) {
             return def;
         }
-        object o = got.Internal;
-        if (o is String str) {
-            return str;
+        Object o = got.internal;
+        if (o instanceof String) {
+            return (String)o;
         }
         else {
-            return o.ToString();
+            return o.toString();
         }
     }
 
     /**
      * Gets an optional float from the section.
      * Returns def if not found.
+     * @param key The key to get data from.
+     * @return The data found, or the default.
      */
+    public Float getFloat(String key) {
+        return getFloat(key, null);
+    }
+
+    /**
+     * Gets an optional float from the section.
+     * Returns def if not found.
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public float? GetFloat(String key, float? def = null) {
-        double? asDouble = GetDouble(key, def);
+     */
+    public Float getFloat(String key, Float def) {
+        Double asDouble = getDouble(key, def == null ? null : def.doubleValue());
         if (asDouble != null) {
-            return (float)asDouble;
+            return asDouble.floatValue();
         }
         return null;
     }
@@ -283,31 +310,38 @@ public class FDSSection {
     /**
      * Gets an optional double from the section.
      * Returns def if not found.
+     * @param key The key to get data from.
+     * @return The data found, or the default.
      */
+    public Double getDouble(String key) {
+        return getDouble(key, null);
+    }
+
+    /**
+     * Gets an optional double from the section.
+     * Returns def if not found.
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public double? GetDouble(String key, double? def = null) {
-        FDSData got = GetData(key);
+     */
+    public Double getDouble(String key, Double def) {
+        FDSData got = getData(key);
         if (got == null) {
             return def;
         }
-        object o = got.Internal;
-        if (o is double asDouble) {
-            return asDouble;
+        Object o = got.internal;
+        if (o instanceof Double) {
+            return (Double) o;
         }
-        else if (o is float asFloat) {
-            return asFloat;
-        }
-        if (o is long asLong) {
-            return (double)asLong;
-        }
-        else if (o is int asInt) {
-            return (double)asInt;
+        else if (o instanceof Float) {
+            return ((Float) o).doubleValue();
         }
         else {
-            if (double.TryParse(o.ToString(), out double d)) {
-                return d;
+            try {
+                return Double.parseDouble(o.toString());
+            }
+            catch (NumberFormatException ex) {
+                // Ignore
             }
             return def;
         }
@@ -316,14 +350,24 @@ public class FDSSection {
     /**
      * Gets an optional int from the section.
      * Returns def if not found.
+     * @param key The key to get data from.
+     * @return The data found, or the default.
      */
+    public Integer getInt(String key) {
+        return getInt(key, null);
+    }
+
+    /**
+     * Gets an optional int from the section.
+     * Returns def if not found.
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public int? GetInt(String key, int? def = null) {
-        long? asLong = GetLong(key, def);
+     */
+    public Integer getInt(String key, Integer def) {
+        Long asLong = getLong(key, def == null ? null : def.longValue());
         if (asLong != null) {
-            return (int)asLong;
+            return asLong.intValue();
         }
         return null;
     }
@@ -331,52 +375,38 @@ public class FDSSection {
     /**
      * Gets an optional long from the section.
      * Returns def if not found.
-     */
      * @param key The key to get data from.
-     * @param def The default object.
      * @return The data found, or the default.
-    public long? GetLong(String key, long? def = null) {
-        FDSData got = GetData(key);
-        if (got == null) {
-            return def;
-        }
-        object o = got.Internal;
-        if (o is long asLong) {
-            return asLong;
-        }
-        else if (o is int asInt) {
-            return asInt;
-        }
-        else {
-            if (long.TryParse(o.ToString(), out long l)) {
-                return l;
-            }
-            return def;
-        }
+     */
+    public Long getLong(String key) {
+        return getLong(key, null);
     }
 
     /**
-     * Gets an optional ulong from the section.
+     * Gets an optional long from the section.
      * Returns def if not found.
-     */
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public ulong? GetUlong(String key, ulong? def = null) {
-        FDSData got = GetData(key);
+     */
+    public Long getLong(String key, Long def) {
+        FDSData got = getData(key);
         if (got == null) {
             return def;
         }
-        object o = got.Internal;
-        if (o is ulong oul) {
-            return oul;
+        Object o = got.internal;
+        if (o instanceof Long) {
+            return (Long) o;
         }
-        else if (o is uint oui) {
-            return oui;
+        else if (o instanceof Integer) {
+            return ((Integer) o).longValue();
         }
         else {
-            if (ulong.TryParse(o.ToString(), out ulong ul)) {
-                return ul;
+            try {
+                return Long.parseLong(o.toString());
+            }
+            catch (NumberFormatException ex) {
+                // Ignore
             }
             return def;
         }
@@ -385,170 +415,180 @@ public class FDSSection {
     /**
      * Gets an object from the section.
      * Returns def if not found.
+     * @param key The key to get data from.
+     * @return The data found, or the default.
      */
+    public Object getObject(String key) {
+        return getObject(key, null);
+    }
+
+    /**
+     * Gets an object from the section.
+     * Returns def if not found.
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public object GetObject(String key, object def = null) {
-        FDSData got = GetData(key);
+     */
+    public Object getObject(String key, Object def) {
+        FDSData got = getData(key);
         if (got == null) {
             return def;
         }
-        return got.Internal;
+        return got.internal;
     }
 
     /**
      * Sets data to the section.
      * May throw an FDSInputException if Set failed!
-     */
      * @param key The key to set data from.
      * @param input The key to set data to.
-    public void Set(String key, object input) {
-        SetData(key, new FDSData() { Internal = input, PrecedingComments = new ArrayList<String>() });
+     */
+    public void set(String key, Object input) {
+        setData(key, new FDSData(input, new ArrayList<>()));
     }
 
     /**
      * Sets data to the section.
      * May throw an FDSInputException if SetData failed!
-     */
      * @param key The key to set data from.
      * @param data The key to set data to.
-    public void SetData(String key, FDSData data) {
-        int lind = key.LastIndexOf(SectionPathSplit);
+     */
+    public void setData(String key, FDSData data) {
+        int lind = key.lastIndexOf(sectionPathSplit);
         if (lind < 0) {
-            SetRootData(key, data);
+            setRootData(key, data);
             return;
         }
-        if (lind == key.Length - 1) {
+        if (lind == key.length() - 1) {
             throw new FDSInputException("Invalid SetData key: Ends in a path splitter!");
         }
 
-        FDSSection sec = GetSectionInternal(key.SubString(0, lind), false, false);
-        sec.SetRootData(key.SubString(lind + 1), data);
+        FDSSection sec = getSectionInternal(key.substring(0, lind), false, false);
+        sec.setRootData(key.substring(lind + 1), data);
     }
 
     /**
      * Defaults data to the section (IE, sets it if not present!)
-     */
      * @param key The key to set data from.
      * @param input The key to set data to.
-    public void Default(String key, object input) {
-        DefaultData(key, new FDSData() { Internal = input, PrecedingComments = new ArrayList<String>() });
+     */
+    public void defaultObject(String key, Object input) {
+        defaultData(key, new FDSData(input, new ArrayList<>()));
     }
 
     /**
      * Defaults data to the section (IE, sets it if not present!)
-     */
      * @param key The key to set data from.
      * @param data The key to set data to.
-    public void DefaultData(String key, FDSData data) {
-        int lind = key.LastIndexOf(SectionPathSplit);
+     */
+    public void defaultData(String key, FDSData data) {
+        int lind = key.lastIndexOf(sectionPathSplit);
         if (lind < 0) {
-            if (GetRootData(key) == null) {
-                SetRootData(key, data);
+            if (getRootData(key) == null) {
+                setRootData(key, data);
             }
             return;
         }
-        if (lind == key.Length - 1) {
+        if (lind == key.length() - 1) {
             throw new FDSInputException("Invalid SetData key: Ends in a path splitter!");
         }
 
-        FDSSection sec = GetSectionInternal(key.SubString(0, lind), false, false);
-        String k = key.SubString(lind + 1);
-        if (sec.GetRootData(k) == null) {
-            sec.SetRootData(k, data);
+        FDSSection sec = getSectionInternal(key.substring(0, lind), false, false);
+        String k = key.substring(lind + 1);
+        if (sec.getRootData(k) == null) {
+            sec.setRootData(k, data);
         }
     }
 
     /**
      * Checks if a key exists in the FDS section.
-     */
      * @param key The key to check for.
-     * @return Whether the key is present.
-    public bool HasKey(String key) {
-        return GetData(key) != null;
+     * @return Whether the key instanceof present.
+     */
+    public boolean hasKey(String key) {
+        return getData(key) != null;
     }
 
     /**
      * Gets data from the section.
      * Returns null if not found.
-     */
      * @param key The key to get data from.
      * @return The data found, or null.
-    public FDSData GetData(String key) {
-        int lind = key.LastIndexOf(SectionPathSplit);
+     */
+    public FDSData getData(String key) {
+        int lind = key.lastIndexOf(sectionPathSplit);
         if (lind < 0) {
-            return GetRootData(key);
+            return getRootData(key);
         }
-        if (lind == key.Length - 1) {
+        if (lind == key.length() - 1) {
             return null;
         }
-        FDSSection sec = GetSection(key.SubString(0, lind));
+        FDSSection sec = getSection(key.substring(0, lind));
         if (sec == null) {
             return null;
         }
-        return sec.GetRootData(key.SubString(lind + 1));
+        return sec.getRootData(key.substring(lind + 1));
     }
 
     /**
      * Gets data from the section.
      * Returns null if not found.
-     */
      * @param key The key to get data from.
      * @return The data found, or null.
-    public FDSData GetDataLowered(String key) {
-        key = key.ToLowerFast();
-        int lind = key.LastIndexOf(SectionPathSplit);
+     */
+    public FDSData getDataLowered(String key) {
+        key = FDSUtility.toLowerCase(key);
+        int lind = key.lastIndexOf(sectionPathSplit);
         if (lind < 0) {
-            return GetRootDataLowered(key);
+            return getRootDataLowered(key);
         }
-        if (lind == key.Length - 1) {
+        if (lind == key.length() - 1) {
             return null;
         }
-        FDSSection sec = GetSectionInternal(key.SubString(0, lind), true, true);
+        FDSSection sec = getSectionInternal(key.substring(0, lind), true, true);
         if (sec == null) {
             return null;
         }
-        return sec.GetRootDataLowered(key.SubString(lind + 1));
+        return sec.getRootDataLowered(key.substring(lind + 1));
     }
 
     /**
      * Gets a sub-section of this FDS section.
      * Returns null if not found.
-     */
      * @param key The key of the section.
      * @return The subsection.
-    public FDSSection GetSection(String key) {
-        return GetSectionInternal(key, true, false);
+     */
+    public FDSSection getSection(String key) {
+        return getSectionInternal(key, true, false);
     }
 
     /**
      * Gets a sub-section of this FDS section.
      * Returns null if not found.
-     */
      * @param key The key of the section.
      * @return The subsection.
-    public FDSSection GetSectionLowered(String key) {
-        return GetSectionInternal(key.ToLowerFast(), true, true);
+     */
+    public FDSSection getSectionLowered(String key) {
+        return getSectionInternal(FDSUtility.toLowerCase(key), true, true);
     }
 
     /**
      * Gets a sub-section of this FDS section.
-     */
      * @param key The key of the section.
      * @param allowNull Whether to allow null returns, otherwise enforce the section's existence. If true, can throw an FDSInputException!
      * @param lowered Whether to read lowercase section names. If set, expects lowercased input key!
      * @return The subsection.
-    private FDSSection GetSectionInternal(String key, bool allowNull, bool lowered) {
-        if (key == null || key.Length == 0) {
+     */
+    private FDSSection getSectionInternal(String key, boolean allowNull, boolean lowered) {
+        if (key == null || key.length() == 0) {
             return this;
         }
-        String[] dat = key.SplitFast(SectionPathSplit);
+        String[] dat = FDSUtility.split(key, sectionPathSplit);
         FDSSection current = this;
-        for (int i = 0; i < dat.Length; i++) {
-            FDSData fdat = lowered ? current.GetRootDataLowered(dat[i]) : current.GetRootData(dat[i]);
-            if (fdat != null && fdat.Internal is FDSSection asSection) {
-                current = asSection;
+        for (int i = 0; i < dat.length; i++) {
+            FDSData fdat = lowered ? current.getRootDataLowered(dat[i]) : current.getRootData(dat[i]);
+            if (fdat != null && fdat.internal instanceof FDSSection) {
+                current = (FDSSection)fdat.internal;
             }
             else {
                 if (allowNull) {
@@ -558,7 +598,7 @@ public class FDSSection {
                     throw new FDSInputException("Key contains non-section contents!");
                 }
                 FDSSection temp = new FDSSection();
-                current.SetRootData(dat[i], new FDSData() { Internal = temp, PrecedingComments = new ArrayList<String>() });
+                current.setRootData(dat[i], new FDSData(temp, new ArrayList<>()));
                 current = temp;
             }
         }
@@ -567,88 +607,102 @@ public class FDSSection {
 
     /**
      * Sets data direct on the root level.
-     */
      * @param key The key to set data to.
-     * @param data The data to read.
-    public void SetRootData(String key, FDSData data) {
-        Data[key] = data;
-        DataLowered[key.ToLowerFast()] = data;
+     * @param dat The data to read.
+     */
+    public void setRootData(String key, FDSData dat) {
+        data.put(key, dat);
+        dataLowered.put(FDSUtility.toLowerCase(key), dat);
     }
 
     /**
      * Gets data direct from the root level.
      * Returns null if not found.
-     */
      * @param key The key to get data from.
      * @return The data found, or null.
-    public FDSData GetRootData(String key) {
-        if (Data.TryGetValue(key, out FDSData temp)) {
-            return temp;
-        }
-        return null;
+     */
+    public FDSData getRootData(String key) {
+        return data.get(key);
     }
 
     /**
      * Gets data direct from the root level.
      * Returns null if not found.
-     * Assumes input is already lowercase!
-     */
+     * Assumes input instanceof already lowercase!
      * @param key The key to get data from.
      * @return The data found, or null.
-    public FDSData GetRootDataLowered(String key) {
-        if (DataLowered.TryGetValue(key, out FDSData temp)) {
-            return temp;
-        }
-        return null;
+     */
+    public FDSData getRootDataLowered(String key) {
+        return dataLowered.get(key);
     }
 
     /**
      * Converts this FDSSection to a textual representation of itself.
+     * @return The String.
      */
-     * @param tabulation How many tabs to start with. Generally do not set this.
+    public String savetoString() {
+        return savetoString("", null);
+    }
+
+    /**
+     * Converts this FDSSection to a textual representation of itself.
+     * @param tabs How many tabs to start with. Generally do not set this.
+     * @return The String.
+     */
+    public String savetoString(String tabs) {
+        return savetoString(tabs, null);
+    }
+
+    /**
+     * Converts this FDSSection to a textual representation of itself.
+     * @param tabs How many tabs to start with. Generally do not set this.
      * @param newline What String to use as a new line. Generally do not set this.
      * @return The String.
-    public String SaveToString(int tabulation = 0, String newline = null) {
+     */
+    public String savetoString(String tabs, String newline) {
         if (newline == null) {
             newline = "\n";
         }
-        String tabs = new String('\t', tabulation);
-        StringBuilder outputBuilder = new StringBuilder(Data.Count * 100);
-        foreach (KeyValuePair<String, FDSData> entry in Data) {
-            FDSData dat = entry.Value;
-            foreach (String str in dat.PrecedingComments) {
-                outputBuilder.Append(tabs).Append("#").Append(str).Append(newline);
+        if (tabs == null) {
+            tabs = "";
+        }
+        StringBuilder outputBuilder = new StringBuilder(data.size() * 100);
+        for (Map.Entry<String, FDSData> entry : data.entrySet()) {
+            String key = entry.getKey();
+            FDSData dat = entry.getValue();
+            for (String str : dat.precedingComments) {
+                outputBuilder.append(tabs).append("#").append(str).append(newline);
             }
-            outputBuilder.Append(tabs).Append(FDSUtility.EscapeKey(entry.Key));
-            if (dat.Internal is FDSSection asSection) {
-                outputBuilder.Append(":").Append(newline).Append(asSection.SaveToString(tabulation + 1, newline));
+            outputBuilder.append(tabs).append(FDSUtility.escapeKey(key));
+            if (dat.internal instanceof FDSSection) {
+                outputBuilder.append(":").append(newline).append(((FDSSection)dat.internal).savetoString(tabs + "    ", newline));
             }
-            else if (dat.Internal is byte[]) {
-                outputBuilder.Append("= ").Append(FDSUtility.Escape(dat.Outputable())).Append(newline);
+            else if (dat.internal instanceof byte[]) {
+                outputBuilder.append("= ").append(FDSUtility.escape(dat.outputable())).append(newline);
             }
-            else if (dat.Internal is ArrayList<FDSData> datums) {
-                outputBuilder.Append(":").Append(newline);
-                foreach (FDSData cdat in datums) {
-                    foreach (String com in cdat.PrecedingComments) {
-                        outputBuilder.Append(tabs).Append("#").Append(com).Append(newline);
+            else if (dat.internal instanceof ArrayList) {
+                outputBuilder.append(":").append(newline);
+                for (FDSData cdat : (ArrayList<FDSData>) dat.internal) {
+                    for (String com : cdat.precedingComments) {
+                        outputBuilder.append(tabs).append("#").append(com).append(newline);
                     }
-                    outputBuilder.Append(tabs);
-                    if (cdat.Internal is byte[]) {
-                        outputBuilder.Append("= ");
+                    outputBuilder.append(tabs);
+                    if (cdat.internal instanceof byte[]) {
+                        outputBuilder.append("= ");
                     }
                     else {
-                        outputBuilder.Append("- ");
+                        outputBuilder.append("- ");
                     }
-                    outputBuilder.Append(FDSUtility.Escape(cdat.Outputable())).Append(newline);
+                    outputBuilder.append(FDSUtility.escape(cdat.outputable())).append(newline);
                 }
             }
             else {
-                outputBuilder.Append(": ").Append(FDSUtility.Escape(dat.Outputable())).Append(newline);
+                outputBuilder.append(": ").append(FDSUtility.escape(dat.outputable())).append(newline);
             }
         }
-        foreach (String str in PostComments) {
-            outputBuilder.Append(tabs).Append("#").Append(str).Append(newline);
+        for (String str : postComments) {
+            outputBuilder.append(tabs).append("#").append(str).append(newline);
         }
-        return outputBuilder.ToString();
+        return outputBuilder.toString();
     }
 }

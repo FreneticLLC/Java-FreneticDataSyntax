@@ -6,17 +6,23 @@
 
 package com.freneticllc.freneticutilities.freneticdatasyntax;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.regex.Pattern;
+
 /**
  * Utilities for the FreneticDataSyntax engine.
  */
 public class FDSUtility {
+
     /**
      * The default splitter character for section paths.
      * To change to or a custom default, use "DefaultSectionPathSplit".
      * To change for a specific section, use "FDSSection.SectionPathSplit".
      * This is a dot value.
      */
-    public const char DEFAULT_SECTION_PATH_SPLIT = '.';
+    public static final char DEFAULT_SECTION_PATH_SPLIT = '.';
 
     /**
      * The default splitter character for section paths.
@@ -24,71 +30,37 @@ public class FDSUtility {
      * To change for a specific section, use "FDSSection.SectionPathSplit".
      * This is initially a dot value. Altering this may cause issues (in particular with escaping) depending on the chosen value.
      */
-    public static char DefaultSectionPathSplit = DEFAULT_SECTION_PATH_SPLIT;
-
-    /**
-     * Reads a file into an "FDSSection". Throws normal exceptions on any issue.
-     * NOTE: May be removed or switched for journalling logic in the future.
-     */
-     * @param fname The name of the file to read.
-     * @return An "FDSSection" containing the same data as the file (if successfully read).
-    public static FDSSection ReadFile(String fname) {
-        return new FDSSection(StringConversionHelper.UTF8Encoding.GetString(File.ReadAllBytes(fname)));
-    }
-
-    /**
-     * Saves an "FDSSection" into a file. Throws normal exceptions on any issue.
-     * NOTE: May be removed or switched for journalling logic in the future.
-     */
-     * @param section The data to save.
-     * @param fname The name of the file to read.
-    public static void SaveToFile(this FDSSection section, String fname) {
-        File.WriteAllBytes(fname, StringConversionHelper.UTF8Encoding.GetBytes(section.SaveToString()));
-    }
-
-    private static readonly byte[] EMPTY_BYTES = new byte[0];
-
-    /**
-     * Converts a Base64 String to a byte array.
-     */
-     * @param inputString The input String to convert.
-     * @return The byte array output.
-    public static byte[] FromBase64(String inputString) {
-        if (inputString.Length == 0) {
-            return EMPTY_BYTES;
-        }
-        return Convert.FromBase64String(inputString);
-    }
+    public static char defaultSectionPathSplit = DEFAULT_SECTION_PATH_SPLIT;
 
     /**
      * Cleans file line endings, tabs, and any other data that may cause issues.
-     */
      * @param contents The original file data.
      * @return The cleaned file data.
-    public static String CleanFileData(String contents) {
-        if (contents.Contains("\r\n")) {
+     */
+    public static String cleanFileData(String contents) {
+        if (contents.contains("\r\n")) {
             // Windows to Unix
-            contents = contents.Replace("\r", "");
+            contents = contents.replace("\r", "");
         }
         else {
             // Old Mac to Unix (leaves Unix form unaltered)
-            contents = contents.Replace('\r', '\n');
+            contents = contents.replace('\r', '\n');
         }
-        return contents.Replace("\t", "    "); // 4 spaces
+        return contents.replace("\t", "    "); // 4 spaces
     }
 
     /**
      * Escapes a String for output.
-     * <para>Only good for values. For keys, use "EscapeKey(String)".</para>
-     */
+     * <para>Only good for values. For keys, use EscapeKey
      * @param str The String to escape.
      * @return The escaped String.
-    public static String Escape(String str) {
-        str = str.Replace("\\", "\\\\").Replace("\t", "\\t").Replace("\n", "\\n").Replace("\r", "\\r");
-        if (str.EndWithFast(' ')) {
+     */
+    public static String escape(String str) {
+        str = str.replace("\\", "\\\\").replace("\t", "\\t").replace("\n", "\\n").replace("\r", "\\r");
+        if (str.endsWith(" ")) {
             str = str + "\\x";
         }
-        if (str.StartsWithFast(' ')) {
+        if (str.startsWith(" ")) {
             str = "\\x" + str;
         }
         return str;
@@ -96,51 +68,174 @@ public class FDSUtility {
 
     /**
      * Escapes a String for usage as a section key.
-     */
      * @param str The String to escape.
      * @return The escaped String.
-    public static String EscapeKey(String str) {
-        return Escape(str).Replace(".", "\\d").Replace(":", "\\c").Replace("=", "\\e");
+     */
+    public static String escapeKey(String str) {
+        return escape(str).replace(".", "\\d").replace(":", "\\c").replace("=", "\\e");
     }
 
     /**
+     * <summary>
      * UnEscapes a String for output.
-     * <para>Only good for values. For keys, use "UnEscapeKey(String)".</para>
-     */
+     * Only good for values. For keys, use unEscapeKey.
      * @param str The String to unescape.
      * @return The unescaped String.
-    public static String UnEscape(String str) {
-        str = str.Replace("\\t", "\t").Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\x", "").Replace("\\\\", "\\");
+     */
+    public static String unEscape(String str) {
+        str = str.replace("\\t", "\t").replace("\\n", "\n").replace("\\r", "\r").replace("\\x", "").replace("\\\\", "\\");
         return str;
     }
 
     /**
      * UnEscapes a String for usage as a section key.
-     */
      * @param str The String to unescape.
      * @return The unescaped String.
-    public static String UnEscapeKey(String str) {
-        return UnEscape(str.Replace("\\d", ".").Replace("\\c", ":").Replace("\\e", "="));
+     */
+    public static String unEscapeKey(String str) {
+        return unEscape(str.replace("\\d", ".").replace("\\c", ":").replace("\\e", "="));
     }
+
+    public static final Pattern LONG_PATTERN = Pattern.compile("\\d+");
+    public static final Pattern DOUBLE_PATTERN = Pattern.compile("\\d+(\\.\\d+)?");
 
     /**
      * Interprets the type of the input text.
-     */
      * @param input The input text.
      * @return The correctly typed result.
-    public static object InterpretType(String input) {
-        if (long.TryParse(input, out long aslong) && aslong.ToString() == input) {
-            return aslong;
+     */
+    public static Object interpretType(String input) {
+        if (DOUBLE_PATTERN.matcher(input).matches()) {
+            try {
+                if (LONG_PATTERN.matcher(input).matches()) {
+                        Long asLong = Long.parseLong(input);
+                        if (asLong.toString().equals(input)) {
+                            return asLong;
+                        }
+                }
+                else {
+                    Double asDouble = Double.parseDouble(input);
+                    if (asDouble.toString().equals(input)) {
+                        return asDouble;
+                    }
+                }
+            }
+            catch (NumberFormatException ex) {
+                // Ignore
+            }
         }
-        if (double.TryParse(input, out double asdouble) && asdouble.ToString() == input) {
-            return asdouble;
-        }
-        if (input == "true") {
-            return true;
-        }
-        if (input == "false") {
-            return false;
+        else {
+            if (input.equals("true")) {
+                return true;
+            }
+            if (input.equals("false")) {
+                return false;
+            }
         }
         return input;
+    }
+
+    /**
+     * Non-regex by-character split method.
+     * @param str the string to split
+     * @param c the character to split around
+     * @return the split list.
+     */
+    public static String[] split(String str, char c) {
+        List<String> strings = new ArrayList<>();
+        int start = 0;
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) == c) {
+                strings.add(str.substring(start, i));
+                start = i + 1;
+            }
+        }
+        strings.add(str.substring(start));
+        return strings.toArray(new String[0]);
+    }
+
+    /**
+     * Non-regex by-character split method.
+     * @param str the string to split
+     * @param c the character to split around
+     * @param max the maximum splits allowed
+     * @return the split list.
+     */
+    public static String[] split(String str, char c, int max) {
+        List<String> strings = new ArrayList<>();
+        int start = 0;
+        for (int i = 0; i < str.length(); i++) {
+            if (str.charAt(i) == c) {
+                strings.add(str.substring(start, i));
+                start = i + 1;
+                if (strings.size() + 1 == max) {
+                    break;
+                }
+            }
+        }
+        strings.add(str.substring(start));
+        return strings.toArray(new String[0]);
+    }
+
+    /**
+     * Quick ASCII toLowerCase method.
+     */
+    public static String toLowerCase(String input) {
+        char[] data = input.toCharArray();
+        for (int i = 0; i < data.length; i++) {
+            if (data[i] >= 'A' && data[i] <= 'Z') {
+                data[i] -= 'A' - 'a';
+            }
+        }
+        return new String(data);
+    }
+
+    /**
+     * Trims the start of a string only.
+     * @param str the original string.
+     * @return the string with no preceding spaces.
+     */
+    public static String trimStart(String str) {
+        for (int start = 0; start < str.length(); start++) {
+            char c = str.charAt(start);
+            if (c != ' ') {
+                return str.substring(start);
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Trims the end of a string only.
+     * @param str the original string.
+     * @return the string with no trailing spaces.
+     */
+    public static String trimEnd(String str) {
+        for (int end = str.length() - 1; end >= 0; end--) {
+            char c = str.charAt(end);
+            if (c != ' ') {
+                return str.substring(0, end + 1);
+            }
+        }
+        return "";
+    }
+
+    /**
+     * Joins a set of objects with a separator in-between each.
+     * @param separator the separator string.
+     * @param objects the object set.
+     * @return the joined string.
+     */
+    public static String join(String separator, Set objects) {
+        StringBuilder builder = new StringBuilder((separator.length() + 4) * objects.size());
+        int count = 0;
+        for (Object val : objects) {
+            builder.append(val);
+            count++;
+            if (count != objects.size()) {
+                builder.append(separator);
+            }
+        }
+        return builder.toString();
     }
 }
