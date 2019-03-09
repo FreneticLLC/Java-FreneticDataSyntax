@@ -15,7 +15,7 @@ public class FDSInputException : Exception
      * Construct the FDS exception.
      */
      * @param message The message explaining the error.
-    public FDSInputException(string message)
+    public FDSInputException(String message)
         : base(message)
     {
         // No init needed.

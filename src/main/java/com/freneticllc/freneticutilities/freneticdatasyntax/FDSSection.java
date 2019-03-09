@@ -16,21 +16,21 @@ public class FDSSection
      * Constructs the FDS Section from textual data.
      */
      * @param contents The contents of the data file.
-    public FDSSection(string contents)
+    public FDSSection(String contents)
     {
         StartingLine = 1;
         contents = FDSUtility.CleanFileData(contents);
-        Dictionary<int, FDSSection> spacedsections = new Dictionary<int, FDSSection>() { { 0, this } };
-        List<string> ccomments = new List<string>();
-        List<string> seccomments = new List<string>();
+        HashMap<int, FDSSection> spacedsections = new HashMap<int, FDSSection>() { { 0, this } };
+        ArrayList<String> ccomments = new ArrayList<String>();
+        ArrayList<String> seccomments = new ArrayList<String>();
         FDSSection csection = this;
-        string[] data = contents.SplitFast('\n');
+        String[] data = contents.SplitFast('\n');
         int pspaces = 0;
-        string secwaiting = null;
-        List<FDSData> clist = null;
+        String secwaiting = null;
+        ArrayList<FDSData> clist = null;
         for (int i = 0; i < data.Length; i++)
         {
-            string line = data[i];
+            String line = data[i];
             int spaces;
             for (spaces = 0; spaces < line.Length; spaces++)
             {
@@ -43,10 +43,10 @@ public class FDSSection
             {
                 continue;
             }
-            string datum = line.Substring(spaces).TrimEnd(' ');
+            String datum = line.SubString(spaces).TrimEnd(' ');
             if (datum.StartsWith("#"))
             {
-                ccomments.Add(datum.Substring(1));
+                ccomments.Add(datum.SubString(1));
                 continue;
             }
             if (spaces < pspaces)
@@ -54,7 +54,7 @@ public class FDSSection
                 if (spacedsections.TryGetValue(spaces, out FDSSection temp))
                 {
                     csection = temp;
-                    foreach (int test in new List<int>(spacedsections.Keys))
+                    foreach (int test in new ArrayList<int>(spacedsections.Keys))
                     {
                         if (test > spaces)
                         {
@@ -66,18 +66,18 @@ public class FDSSection
                 {
                     Exception(i, line, "Spaced incorrectly. Spacing length is less than previous spacing length,"
                         + "but does not match the spacing value of any known section, valid: "
-                        + string.Join(" / ", spacedsections.Keys) + ", found: " + spaces + ", was: " + pspaces);
+                        + String.Join(" / ", spacedsections.Keys) + ", found: " + spaces + ", was: " + pspaces);
                 }
             }
             if (datum[0] == '-' || datum[0] == '=')
             {
-                string clistline = datum.Substring(1).TrimStart(' ');
+                String clistline = datum.SubString(1).TrimStart(' ');
                 if (clist == null)
                 {
                     if (spaces >= pspaces && secwaiting != null)
                     {
-                        clist = new List<FDSData>();
-                        csection.SetRootData(FDSUtility.UnEscapeKey(secwaiting), new FDSData() { PrecedingComments = new List<string>(seccomments), Internal = clist });
+                        clist = new ArrayList<FDSData>();
+                        csection.SetRootData(FDSUtility.UnEscapeKey(secwaiting), new FDSData() { PrecedingComments = new ArrayList<String>(seccomments), Internal = clist });
                         seccomments.Clear();
                         secwaiting = null;
                     }
@@ -86,26 +86,26 @@ public class FDSSection
                         Exception(i, line, "Line purpose unknown, attempted list entry when not building a list");
                     }
                 }
-                string unescaped = FDSUtility.UnEscape(clistline);
+                String unescaped = FDSUtility.UnEscape(clistline);
                 clist.Add(new FDSData()
                 {
-                    PrecedingComments = new List<string>(ccomments),
+                    PrecedingComments = new ArrayList<String>(ccomments),
                     Internal = datum[0] == '=' ? FDSUtility.FromBase64(unescaped) : FDSUtility.InterpretType(unescaped)
                 });
                 ccomments.Clear();
                 continue;
             }
             clist = null;
-            string startofline = "";
-            string endofline = "";
+            String startofline = "";
+            String endofline = "";
             char type = '\0';
             for (int spot = 0; spot < datum.Length; spot++)
             {
                 if (datum[spot] == ':' || datum[spot] == '=')
                 {
                     type = datum[spot];
-                    startofline = datum.Substring(0, spot);
-                    endofline = spot == datum.Length - 1 ? "": datum.Substring(spot + 1);
+                    startofline = datum.SubString(0, spot);
+                    endofline = spot == datum.Length - 1 ? "": datum.SubString(spot + 1);
                     break;
                 }
             }
@@ -123,7 +123,7 @@ public class FDSSection
                 FDSSection sect = new FDSSection();
                 csection.SetRootData(FDSUtility.UnEscapeKey(secwaiting), new FDSData()
                 {
-                    PrecedingComments = new List<string>(seccomments),
+                    PrecedingComments = new ArrayList<String>(seccomments),
                     Internal = sect
                 });
                 seccomments.Clear();
@@ -135,7 +135,7 @@ public class FDSSection
             {
                 csection.SetRootData(FDSUtility.UnEscapeKey(startofline), new FDSData()
                 {
-                    PrecedingComments = new List<string>(ccomments),
+                    PrecedingComments = new ArrayList<String>(ccomments),
                     Internal = FDSUtility.FromBase64(FDSUtility.UnEscape(endofline))
                 });
                 ccomments.Clear();
@@ -145,14 +145,14 @@ public class FDSSection
                 if (endofline.Length == 0)
                 {
                     secwaiting = startofline;
-                    seccomments = new List<string>(ccomments);
+                    seccomments = new ArrayList<String>(ccomments);
                     ccomments.Clear();
                 }
                 else
                 {
                     csection.SetRootData(FDSUtility.UnEscapeKey(startofline), new FDSData()
                     {
-                        PrecedingComments = new List<string>(ccomments),
+                        PrecedingComments = new ArrayList<String>(ccomments),
                         Internal = FDSUtility.InterpretType(FDSUtility.UnEscape(endofline))
                     });
                     ccomments.Clear();
@@ -167,7 +167,7 @@ public class FDSSection
         PostComments.AddRange(ccomments);
     }
 
-    private void Exception(int linenumber, string line, string reason)
+    private void Exception(int linenumber, String line, String reason)
     {
         throw new Exception("[FDS Parsing error] Line " + (linenumber + 1) + ": " + reason + ", from line as follows: `" + line + "`");
     }
@@ -190,17 +190,17 @@ public class FDSSection
     /**
      * All data contained by this section.
      */
-    public Dictionary<string, FDSData> Data = new Dictionary<string, FDSData>();
+    public HashMap<String, FDSData> Data = new HashMap<String, FDSData>();
 
     /**
      * Lowercase-stored data for this section.
      */
-    public Dictionary<string, FDSData> DataLowered = new Dictionary<string, FDSData>();
+    public HashMap<String, FDSData> DataLowered = new HashMap<String, FDSData>();
 
     /**
      * Comments at the end of the section (usually only on the file root section).
      */
-    public List<string> PostComments = new List<string>();
+    public ArrayList<String> PostComments = new ArrayList<String>();
 
     /**
      * The section path splitter for this section.
@@ -213,25 +213,25 @@ public class FDSSection
      * Returns the set of all keys at the root of this section.
      */
      * @return All keys.
-    public IEnumerable<string> GetRootKeys()
+    public Set<String> GetRootKeys()
     {
         return Data.Keys;
     }
 
     /**
-     * Gets a string from the section. Can stringify non-string values.
+     * Gets a String from the section. Can Stringify non-String values.
      * Returns null if not found.
      */
      * @param key The key to get data from.
      * @return The data found, or the default.
-    public List<string> GetStringList(string key)
+    public ArrayList<String> GetStringList(String key)
     {
-        List<FDSData> dat = GetDataList(key);
+        ArrayList<FDSData> dat = GetDataList(key);
         if (dat == null)
         {
             return null;
         }
-        List<string> newlist = new List<string>(dat.Count);
+        ArrayList<String> newlist = new ArrayList<String>(dat.Count);
         for (int i = 0; i < dat.Count; i++)
         {
             newlist.Add(dat[i].Internal.ToString());
@@ -240,12 +240,12 @@ public class FDSSection
     }
 
     /**
-     * Gets a string from the section. Can stringify non-string values.
+     * Gets a String from the section. Can Stringify non-String values.
      * Returns null if not found.
      */
      * @param key The key to get data from.
      * @return The data found, or the default.
-    public List<FDSData> GetDataList(string key)
+    public ArrayList<FDSData> GetDataList(String key)
     {
         FDSData got = GetData(key);
         if (got == null)
@@ -253,13 +253,13 @@ public class FDSSection
             return null;
         }
         object o = got.Internal;
-        if (o is List<FDSData> asList)
+        if (o is ArrayList<FDSData> asList)
         {
             return asList;
         }
         else
         {
-            return new List<FDSData>() { got };
+            return new ArrayList<FDSData>() { got };
         }
     }
 
@@ -270,7 +270,7 @@ public class FDSSection
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public bool? GetBool(string key, bool? def = null)
+    public bool? GetBool(String key, bool? def = null)
     {
         FDSData got = GetData(key);
         if (got == null)
@@ -289,13 +289,13 @@ public class FDSSection
     }
 
     /**
-     * Gets a string from the section. Can stringify non-string values.
+     * Gets a String from the section. Can Stringify non-String values.
      * Returns def if not found.
      */
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public string GetString(string key, string def = null)
+    public String GetString(String key, String def = null)
     {
         FDSData got = GetData(key);
         if (got == null)
@@ -303,7 +303,7 @@ public class FDSSection
             return def;
         }
         object o = got.Internal;
-        if (o is string str)
+        if (o is String str)
         {
             return str;
         }
@@ -320,7 +320,7 @@ public class FDSSection
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public float? GetFloat(string key, float? def = null)
+    public float? GetFloat(String key, float? def = null)
     {
         double? asDouble = GetDouble(key, def);
         if (asDouble != null)
@@ -337,7 +337,7 @@ public class FDSSection
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public double? GetDouble(string key, double? def = null)
+    public double? GetDouble(String key, double? def = null)
     {
         FDSData got = GetData(key);
         if (got == null)
@@ -378,7 +378,7 @@ public class FDSSection
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public int? GetInt(string key, int? def = null)
+    public int? GetInt(String key, int? def = null)
     {
         long? asLong = GetLong(key, def);
         if (asLong != null)
@@ -395,7 +395,7 @@ public class FDSSection
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public long? GetLong(string key, long? def = null)
+    public long? GetLong(String key, long? def = null)
     {
         FDSData got = GetData(key);
         if (got == null)
@@ -428,7 +428,7 @@ public class FDSSection
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public ulong? GetUlong(string key, ulong? def = null)
+    public ulong? GetUlong(String key, ulong? def = null)
     {
         FDSData got = GetData(key);
         if (got == null)
@@ -461,7 +461,7 @@ public class FDSSection
      * @param key The key to get data from.
      * @param def The default object.
      * @return The data found, or the default.
-    public object GetObject(string key, object def = null)
+    public object GetObject(String key, object def = null)
     {
         FDSData got = GetData(key);
         if (got == null)
@@ -477,9 +477,9 @@ public class FDSSection
      */
      * @param key The key to set data from.
      * @param input The key to set data to.
-    public void Set(string key, object input)
+    public void Set(String key, object input)
     {
-        SetData(key, new FDSData() { Internal = input, PrecedingComments = new List<string>() });
+        SetData(key, new FDSData() { Internal = input, PrecedingComments = new ArrayList<String>() });
     }
 
     /**
@@ -488,7 +488,7 @@ public class FDSSection
      */
      * @param key The key to set data from.
      * @param data The key to set data to.
-    public void SetData(string key, FDSData data)
+    public void SetData(String key, FDSData data)
     {
         int lind = key.LastIndexOf(SectionPathSplit);
         if (lind < 0)
@@ -501,8 +501,8 @@ public class FDSSection
             throw new FDSInputException("Invalid SetData key: Ends in a path splitter!");
         }
 
-        FDSSection sec = GetSectionInternal(key.Substring(0, lind), false, false);
-        sec.SetRootData(key.Substring(lind + 1), data);
+        FDSSection sec = GetSectionInternal(key.SubString(0, lind), false, false);
+        sec.SetRootData(key.SubString(lind + 1), data);
     }
 
     /**
@@ -510,9 +510,9 @@ public class FDSSection
      */
      * @param key The key to set data from.
      * @param input The key to set data to.
-    public void Default(string key, object input)
+    public void Default(String key, object input)
     {
-        DefaultData(key, new FDSData() { Internal = input, PrecedingComments = new List<string>() });
+        DefaultData(key, new FDSData() { Internal = input, PrecedingComments = new ArrayList<String>() });
     }
 
     /**
@@ -520,7 +520,7 @@ public class FDSSection
      */
      * @param key The key to set data from.
      * @param data The key to set data to.
-    public void DefaultData(string key, FDSData data)
+    public void DefaultData(String key, FDSData data)
     {
         int lind = key.LastIndexOf(SectionPathSplit);
         if (lind < 0)
@@ -536,8 +536,8 @@ public class FDSSection
             throw new FDSInputException("Invalid SetData key: Ends in a path splitter!");
         }
 
-        FDSSection sec = GetSectionInternal(key.Substring(0, lind), false, false);
-        string k = key.Substring(lind + 1);
+        FDSSection sec = GetSectionInternal(key.SubString(0, lind), false, false);
+        String k = key.SubString(lind + 1);
         if (sec.GetRootData(k) == null)
         {
             sec.SetRootData(k, data);
@@ -549,7 +549,7 @@ public class FDSSection
      */
      * @param key The key to check for.
      * @return Whether the key is present.
-    public bool HasKey(string key)
+    public bool HasKey(String key)
     {
         return GetData(key) != null;
     }
@@ -560,7 +560,7 @@ public class FDSSection
      */
      * @param key The key to get data from.
      * @return The data found, or null.
-    public FDSData GetData(string key)
+    public FDSData GetData(String key)
     {
         int lind = key.LastIndexOf(SectionPathSplit);
         if (lind < 0)
@@ -571,12 +571,12 @@ public class FDSSection
         {
             return null;
         }
-        FDSSection sec = GetSection(key.Substring(0, lind));
+        FDSSection sec = GetSection(key.SubString(0, lind));
         if (sec == null)
         {
             return null;
         }
-        return sec.GetRootData(key.Substring(lind + 1));
+        return sec.GetRootData(key.SubString(lind + 1));
     }
 
     /**
@@ -585,7 +585,7 @@ public class FDSSection
      */
      * @param key The key to get data from.
      * @return The data found, or null.
-    public FDSData GetDataLowered(string key)
+    public FDSData GetDataLowered(String key)
     {
         key = key.ToLowerFast();
         int lind = key.LastIndexOf(SectionPathSplit);
@@ -597,12 +597,12 @@ public class FDSSection
         {
             return null;
         }
-        FDSSection sec = GetSectionInternal(key.Substring(0, lind), true, true);
+        FDSSection sec = GetSectionInternal(key.SubString(0, lind), true, true);
         if (sec == null)
         {
             return null;
         }
-        return sec.GetRootDataLowered(key.Substring(lind + 1));
+        return sec.GetRootDataLowered(key.SubString(lind + 1));
     }
 
     /**
@@ -611,7 +611,7 @@ public class FDSSection
      */
      * @param key The key of the section.
      * @return The subsection.
-    public FDSSection GetSection(string key)
+    public FDSSection GetSection(String key)
     {
         return GetSectionInternal(key, true, false);
     }
@@ -622,7 +622,7 @@ public class FDSSection
      */
      * @param key The key of the section.
      * @return The subsection.
-    public FDSSection GetSectionLowered(string key)
+    public FDSSection GetSectionLowered(String key)
     {
         return GetSectionInternal(key.ToLowerFast(), true, true);
     }
@@ -634,13 +634,13 @@ public class FDSSection
      * @param allowNull Whether to allow null returns, otherwise enforce the section's existence. If true, can throw an FDSInputException!
      * @param lowered Whether to read lowercase section names. If set, expects lowercased input key!
      * @return The subsection.
-    private FDSSection GetSectionInternal(string key, bool allowNull, bool lowered)
+    private FDSSection GetSectionInternal(String key, bool allowNull, bool lowered)
     {
         if (key == null || key.Length == 0)
         {
             return this;
         }
-        string[] dat = key.SplitFast(SectionPathSplit);
+        String[] dat = key.SplitFast(SectionPathSplit);
         FDSSection current = this;
         for (int i = 0; i < dat.Length; i++)
         {
@@ -660,7 +660,7 @@ public class FDSSection
                     throw new FDSInputException("Key contains non-section contents!");
                 }
                 FDSSection temp = new FDSSection();
-                current.SetRootData(dat[i], new FDSData() { Internal = temp, PrecedingComments = new List<string>() });
+                current.SetRootData(dat[i], new FDSData() { Internal = temp, PrecedingComments = new ArrayList<String>() });
                 current = temp;
             }
         }
@@ -672,7 +672,7 @@ public class FDSSection
      */
      * @param key The key to set data to.
      * @param data The data to read.
-    public void SetRootData(string key, FDSData data)
+    public void SetRootData(String key, FDSData data)
     {
         Data[key] = data;
         DataLowered[key.ToLowerFast()] = data;
@@ -684,7 +684,7 @@ public class FDSSection
      */
      * @param key The key to get data from.
      * @return The data found, or null.
-    public FDSData GetRootData(string key)
+    public FDSData GetRootData(String key)
     {
         if (Data.TryGetValue(key, out FDSData temp))
         {
@@ -700,7 +700,7 @@ public class FDSSection
      */
      * @param key The key to get data from.
      * @return The data found, or null.
-    public FDSData GetRootDataLowered(string key)
+    public FDSData GetRootDataLowered(String key)
     {
         if (DataLowered.TryGetValue(key, out FDSData temp))
         {
@@ -713,20 +713,20 @@ public class FDSSection
      * Converts this FDSSection to a textual representation of itself.
      */
      * @param tabulation How many tabs to start with. Generally do not set this.
-     * @param newline What string to use as a new line. Generally do not set this.
-     * @return The string.
-    public string SaveToString(int tabulation = 0, string newline = null)
+     * @param newline What String to use as a new line. Generally do not set this.
+     * @return The String.
+    public String SaveToString(int tabulation = 0, String newline = null)
     {
         if (newline == null)
         {
             newline = "\n";
         }
-        string tabs = new string('\t', tabulation);
+        String tabs = new String('\t', tabulation);
         StringBuilder outputBuilder = new StringBuilder(Data.Count * 100);
-        foreach (KeyValuePair<string, FDSData> entry in Data)
+        foreach (KeyValuePair<String, FDSData> entry in Data)
         {
             FDSData dat = entry.Value;
-            foreach (string str in dat.PrecedingComments)
+            foreach (String str in dat.PrecedingComments)
             {
                 outputBuilder.Append(tabs).Append("#").Append(str).Append(newline);
             }
@@ -739,12 +739,12 @@ public class FDSSection
             {
                 outputBuilder.Append("= ").Append(FDSUtility.Escape(dat.Outputable())).Append(newline);
             }
-            else if (dat.Internal is List<FDSData> datums)
+            else if (dat.Internal is ArrayList<FDSData> datums)
             {
                 outputBuilder.Append(":").Append(newline);
                 foreach (FDSData cdat in datums)
                 {
-                    foreach (string com in cdat.PrecedingComments)
+                    foreach (String com in cdat.PrecedingComments)
                     {
                         outputBuilder.Append(tabs).Append("#").Append(com).Append(newline);
                     }
@@ -765,7 +765,7 @@ public class FDSSection
                 outputBuilder.Append(": ").Append(FDSUtility.Escape(dat.Outputable())).Append(newline);
             }
         }
-        foreach (string str in PostComments)
+        foreach (String str in PostComments)
         {
             outputBuilder.Append(tabs).Append("#").Append(str).Append(newline);
         }

@@ -14,13 +14,13 @@ public class FDSData
     /**
      * The list of comments preceding this data piece.
      */
-    public List<string> PrecedingComments;
+    public ArrayList<String> PrecedingComments;
 
     /**
      * Adds a preceding comment to this data piece.
      */
      * @param comment The comment to add.
-    public void AddComment(string comment)
+    public void AddComment(String comment)
     {
         comment = comment.Replace("\r", "");
         PrecedingComments.AddRange(comment.Split('\n').Select(str => str.TrimEnd()));
@@ -32,12 +32,12 @@ public class FDSData
     public object Internal;
 
     /**
-     * Returns the output-able string representation of this data.
+     * Returns the output-able String representation of this data.
      */
      * @return The resultant data.
-    public string Outputable()
+    public String Outputable()
     {
-        if (Internal is List<FDSData> list)
+        if (Internal is ArrayList<FDSData> list)
         {
             StringBuilder outputBuilder = new StringBuilder();
             foreach (FDSData dat in list)

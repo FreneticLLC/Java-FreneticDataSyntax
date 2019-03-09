@@ -33,7 +33,7 @@ public class FDSUtility
      */
      * @param fname The name of the file to read.
      * @return An "FDSSection" containing the same data as the file (if successfully read).
-    public static FDSSection ReadFile(string fname)
+    public static FDSSection ReadFile(String fname)
     {
         return new FDSSection(StringConversionHelper.UTF8Encoding.GetString(File.ReadAllBytes(fname)));
     }
@@ -44,7 +44,7 @@ public class FDSUtility
      */
      * @param section The data to save.
      * @param fname The name of the file to read.
-    public static void SaveToFile(this FDSSection section, string fname)
+    public static void SaveToFile(this FDSSection section, String fname)
     {
         File.WriteAllBytes(fname, StringConversionHelper.UTF8Encoding.GetBytes(section.SaveToString()));
     }
@@ -52,11 +52,11 @@ public class FDSUtility
     private static readonly byte[] EMPTY_BYTES = new byte[0];
 
     /**
-     * Converts a Base64 string to a byte array.
+     * Converts a Base64 String to a byte array.
      */
-     * @param inputString The input string to convert.
+     * @param inputString The input String to convert.
      * @return The byte array output.
-    public static byte[] FromBase64(string inputString)
+    public static byte[] FromBase64(String inputString)
     {
         if (inputString.Length == 0)
         {
@@ -70,7 +70,7 @@ public class FDSUtility
      */
      * @param contents The original file data.
      * @return The cleaned file data.
-    public static string CleanFileData(string contents)
+    public static String CleanFileData(String contents)
     {
         if (contents.Contains("\r\n"))
         {
@@ -86,12 +86,12 @@ public class FDSUtility
     }
 
     /**
-     * Escapes a string for output.
-     * <para>Only good for values. For keys, use "EscapeKey(string)".</para>
+     * Escapes a String for output.
+     * <para>Only good for values. For keys, use "EscapeKey(String)".</para>
      */
-     * @param str The string to escape.
-     * @return The escaped string.
-    public static string Escape(string str)
+     * @param str The String to escape.
+     * @return The escaped String.
+    public static String Escape(String str)
     {
         str = str.Replace("\\", "\\\\").Replace("\t", "\\t").Replace("\n", "\\n").Replace("\r", "\\r");
         if (str.EndWithFast(' '))
@@ -106,33 +106,33 @@ public class FDSUtility
     }
 
     /**
-     * Escapes a string for usage as a section key.
+     * Escapes a String for usage as a section key.
      */
-     * @param str The string to escape.
-     * @return The escaped string.
-    public static string EscapeKey(string str)
+     * @param str The String to escape.
+     * @return The escaped String.
+    public static String EscapeKey(String str)
     {
         return Escape(str).Replace(".", "\\d").Replace(":", "\\c").Replace("=", "\\e");
     }
 
     /**
-     * UnEscapes a string for output.
-     * <para>Only good for values. For keys, use "UnEscapeKey(string)".</para>
+     * UnEscapes a String for output.
+     * <para>Only good for values. For keys, use "UnEscapeKey(String)".</para>
      */
-     * @param str The string to unescape.
-     * @return The unescaped string.
-    public static string UnEscape(string str)
+     * @param str The String to unescape.
+     * @return The unescaped String.
+    public static String UnEscape(String str)
     {
         str = str.Replace("\\t", "\t").Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\x", "").Replace("\\\\", "\\");
         return str;
     }
 
     /**
-     * UnEscapes a string for usage as a section key.
+     * UnEscapes a String for usage as a section key.
      */
-     * @param str The string to unescape.
-     * @return The unescaped string.
-    public static string UnEscapeKey(string str)
+     * @param str The String to unescape.
+     * @return The unescaped String.
+    public static String UnEscapeKey(String str)
     {
         return UnEscape(str.Replace("\\d", ".").Replace("\\c", ":").Replace("\\e", "="));
     }
@@ -142,7 +142,7 @@ public class FDSUtility
      */
      * @param input The input text.
      * @return The correctly typed result.
-    public static object InterpretType(string input)
+    public static object InterpretType(String input)
     {
         if (long.TryParse(input, out long aslong) && aslong.ToString() == input)
         {
