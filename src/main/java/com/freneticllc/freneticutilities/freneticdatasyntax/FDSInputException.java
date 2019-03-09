@@ -4,27 +4,20 @@
 // See README.md or LICENSE.txt in the FreneticUtilities source root for the contents of the license.
 //
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+package com.freneticllc.freneticutilities.freneticdatasyntax;
 
-namespace FreneticUtilities.FreneticDataSyntax
+/// <summary>
+/// Represents an exception throw while inputting data to an FDS section.
+/// </summary>
+public class FDSInputException : Exception
 {
     /// <summary>
-    /// Represents an exception throw while inputting data to an FDS section.
+    /// Construct the FDS exception.
     /// </summary>
-    [Serializable]
-    public class FDSInputException : Exception
+    /// <param name="message">The message explaining the error.</param>
+    public FDSInputException(string message)
+        : base(message)
     {
-        /// <summary>
-        /// Construct the FDS exception.
-        /// </summary>
-        /// <param name="message">The message explaining the error.</param>
-        public FDSInputException(string message)
-            : base(message)
-        {
-            // No init needed.
-        }
+        // No init needed.
     }
 }
