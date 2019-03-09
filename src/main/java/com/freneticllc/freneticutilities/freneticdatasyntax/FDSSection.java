@@ -49,7 +49,7 @@ public class FDSSection {
                 FDSSection temp = spacedsections.get(spaces);
                 if (temp != null) {
                     csection = temp;
-                    for (int test : new ArrayList<Integer>(spacedsections.keySet())) {
+                    for (int test : new ArrayList<>(spacedsections.keySet())) {
                         if (test > spaces) {
                             spacedsections.remove(test);
                         }
@@ -115,7 +115,7 @@ public class FDSSection {
             else if (type == ':') {
                 if (endofline.length() == 0) {
                     secwaiting = startofline;
-                    seccomments = new ArrayList<String>(ccomments);
+                    seccomments = new ArrayList<>(ccomments);
                     ccomments.clear();
                 }
                 else {
@@ -153,7 +153,7 @@ public class FDSSection {
     /**
      * All data contained by this section.
      */
-    public HashMap<String, FDSData> data = new HashMap<>();
+    public LinkedHashMap<String, FDSData> data = new LinkedHashMap<>();
 
     /**
      * Lowercase-stored data for this section.
