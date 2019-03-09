@@ -6,44 +6,44 @@
 
 package com.freneticllc.freneticutilities.freneticdatasyntax;
 
-/// <summary>
-/// Utilities for the FreneticDataSyntax engine.
-/// </summary>
+/**
+ * Utilities for the FreneticDataSyntax engine.
+ */
 public class FDSUtility
 {
-    /// <summary>
-    /// The default splitter character for section paths.
-    /// To change to or a custom default, use <see cref="DefaultSectionPathSplit"/>.
-    /// To change for a specific section, use <see cref="FDSSection.SectionPathSplit"/>.
-    /// This is a dot value.
-    /// </summary>
+    /**
+     * The default splitter character for section paths.
+     * To change to or a custom default, use "DefaultSectionPathSplit".
+     * To change for a specific section, use "FDSSection.SectionPathSplit".
+     * This is a dot value.
+     */
     public const char DEFAULT_SECTION_PATH_SPLIT = '.';
 
-    /// <summary>
-    /// The default splitter character for section paths.
-    /// For the internal unmodified default, use <see cref="DEFAULT_SECTION_PATH_SPLIT"/>.
-    /// To change for a specific section, use <see cref="FDSSection.SectionPathSplit"/>.
-    /// This is initially a dot value. Altering this may cause issues (in particular with escaping) depending on the chosen value.
-    /// </summary>
+    /**
+     * The default splitter character for section paths.
+     * For the internal unmodified default, use "DEFAULT_SECTION_PATH_SPLIT".
+     * To change for a specific section, use "FDSSection.SectionPathSplit".
+     * This is initially a dot value. Altering this may cause issues (in particular with escaping) depending on the chosen value.
+     */
     public static char DefaultSectionPathSplit = DEFAULT_SECTION_PATH_SPLIT;
 
-    /// <summary>
-    /// Reads a file into an <see cref="FDSSection"/>. Throws normal exceptions on any issue.
-    /// NOTE: May be removed or switched for journalling logic in the future.
-    /// </summary>
-    /// <param name="fname">The name of the file to read.</param>
-    /// <returns>An <see cref="FDSSection"/> containing the same data as the file (if successfully read).</returns>
+    /**
+     * Reads a file into an "FDSSection". Throws normal exceptions on any issue.
+     * NOTE: May be removed or switched for journalling logic in the future.
+     */
+     * @param fname The name of the file to read.
+     * @return An "FDSSection" containing the same data as the file (if successfully read).
     public static FDSSection ReadFile(string fname)
     {
         return new FDSSection(StringConversionHelper.UTF8Encoding.GetString(File.ReadAllBytes(fname)));
     }
 
-    /// <summary>
-    /// Saves an <see cref="FDSSection"/> into a file. Throws normal exceptions on any issue.
-    /// NOTE: May be removed or switched for journalling logic in the future.
-    /// </summary>
-    /// <param name="section">The data to save.</param>
-    /// <param name="fname">The name of the file to read.</param>
+    /**
+     * Saves an "FDSSection" into a file. Throws normal exceptions on any issue.
+     * NOTE: May be removed or switched for journalling logic in the future.
+     */
+     * @param section The data to save.
+     * @param fname The name of the file to read.
     public static void SaveToFile(this FDSSection section, string fname)
     {
         File.WriteAllBytes(fname, StringConversionHelper.UTF8Encoding.GetBytes(section.SaveToString()));
@@ -51,11 +51,11 @@ public class FDSUtility
 
     private static readonly byte[] EMPTY_BYTES = new byte[0];
 
-    /// <summary>
-    /// Converts a Base64 string to a byte array.
-    /// </summary>
-    /// <param name="inputString">The input string to convert.</param>
-    /// <returns>The byte array output.</returns>
+    /**
+     * Converts a Base64 string to a byte array.
+     */
+     * @param inputString The input string to convert.
+     * @return The byte array output.
     public static byte[] FromBase64(string inputString)
     {
         if (inputString.Length == 0)
@@ -65,11 +65,11 @@ public class FDSUtility
         return Convert.FromBase64String(inputString);
     }
 
-    /// <summary>
-    /// Cleans file line endings, tabs, and any other data that may cause issues.
-    /// </summary>
-    /// <param name="contents">The original file data.</param>
-    /// <returns>The cleaned file data.</returns>
+    /**
+     * Cleans file line endings, tabs, and any other data that may cause issues.
+     */
+     * @param contents The original file data.
+     * @return The cleaned file data.
     public static string CleanFileData(string contents)
     {
         if (contents.Contains("\r\n"))
@@ -85,12 +85,12 @@ public class FDSUtility
         return contents.Replace("\t", "    "); // 4 spaces
     }
 
-    /// <summary>
-    /// Escapes a string for output.
-    /// <para>Only good for values. For keys, use <see cref="EscapeKey(string)"/>.</para>
-    /// </summary>
-    /// <param name="str">The string to escape.</param>
-    /// <returns>The escaped string.</returns>
+    /**
+     * Escapes a string for output.
+     * <para>Only good for values. For keys, use "EscapeKey(string)".</para>
+     */
+     * @param str The string to escape.
+     * @return The escaped string.
     public static string Escape(string str)
     {
         str = str.Replace("\\", "\\\\").Replace("\t", "\\t").Replace("\n", "\\n").Replace("\r", "\\r");
@@ -105,43 +105,43 @@ public class FDSUtility
         return str;
     }
 
-    /// <summary>
-    /// Escapes a string for usage as a section key.
-    /// </summary>
-    /// <param name="str">The string to escape.</param>
-    /// <returns>The escaped string.</returns>
+    /**
+     * Escapes a string for usage as a section key.
+     */
+     * @param str The string to escape.
+     * @return The escaped string.
     public static string EscapeKey(string str)
     {
         return Escape(str).Replace(".", "\\d").Replace(":", "\\c").Replace("=", "\\e");
     }
 
-    /// <summary>
-    /// UnEscapes a string for output.
-    /// <para>Only good for values. For keys, use <see cref="UnEscapeKey(string)"/>.</para>
-    /// </summary>
-    /// <param name="str">The string to unescape.</param>
-    /// <returns>The unescaped string.</returns>
+    /**
+     * UnEscapes a string for output.
+     * <para>Only good for values. For keys, use "UnEscapeKey(string)".</para>
+     */
+     * @param str The string to unescape.
+     * @return The unescaped string.
     public static string UnEscape(string str)
     {
         str = str.Replace("\\t", "\t").Replace("\\n", "\n").Replace("\\r", "\r").Replace("\\x", "").Replace("\\\\", "\\");
         return str;
     }
 
-    /// <summary>
-    /// UnEscapes a string for usage as a section key.
-    /// </summary>
-    /// <param name="str">The string to unescape.</param>
-    /// <returns>The unescaped string.</returns>
+    /**
+     * UnEscapes a string for usage as a section key.
+     */
+     * @param str The string to unescape.
+     * @return The unescaped string.
     public static string UnEscapeKey(string str)
     {
         return UnEscape(str.Replace("\\d", ".").Replace("\\c", ":").Replace("\\e", "="));
     }
 
-    /// <summary>
-    /// Interprets the type of the input text.
-    /// </summary>
-    /// <param name="input">The input text.</param>
-    /// <returns>The correctly typed result.</returns>
+    /**
+     * Interprets the type of the input text.
+     */
+     * @param input The input text.
+     * @return The correctly typed result.
     public static object InterpretType(string input)
     {
         if (long.TryParse(input, out long aslong) && aslong.ToString() == input)

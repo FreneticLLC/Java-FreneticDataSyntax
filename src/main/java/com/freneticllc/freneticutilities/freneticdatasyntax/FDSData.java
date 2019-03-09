@@ -6,35 +6,35 @@
 
 package com.freneticllc.freneticutilities.freneticdatasyntax;
 
-/// <summary>
-/// Represents a piece of data within an FDS Section.
-/// </summary>
+/**
+ * Represents a piece of data within an FDS Section.
+ */
 public class FDSData
 {
-    /// <summary>
-    /// The list of comments preceding this data piece.
-    /// </summary>
+    /**
+     * The list of comments preceding this data piece.
+     */
     public List<string> PrecedingComments;
 
-    /// <summary>
-    /// Adds a preceding comment to this data piece.
-    /// </summary>
-    /// <param name="comment">The comment to add.</param>
+    /**
+     * Adds a preceding comment to this data piece.
+     */
+     * @param comment The comment to add.
     public void AddComment(string comment)
     {
         comment = comment.Replace("\r", "");
         PrecedingComments.AddRange(comment.Split('\n').Select(str => str.TrimEnd()));
     }
 
-    /// <summary>
-    /// The internal represented data.
-    /// </summary>
+    /**
+     * The internal represented data.
+     */
     public object Internal;
 
-    /// <summary>
-    /// Returns the output-able string representation of this data.
-    /// </summary>
-    /// <returns>The resultant data.</returns>
+    /**
+     * Returns the output-able string representation of this data.
+     */
+     * @return The resultant data.
     public string Outputable()
     {
         if (Internal is List<FDSData> list)

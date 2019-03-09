@@ -6,15 +6,15 @@
 
 package com.freneticllc.freneticutilities.freneticdatasyntax;
 
-/// <summary>
-/// Represents an exception throw while inputting data to an FDS section.
-/// </summary>
+/**
+ * Represents an exception throw while inputting data to an FDS section.
+ */
 public class FDSInputException : Exception
 {
-    /// <summary>
-    /// Construct the FDS exception.
-    /// </summary>
-    /// <param name="message">The message explaining the error.</param>
+    /**
+     * Construct the FDS exception.
+     */
+     * @param message The message explaining the error.
     public FDSInputException(string message)
         : base(message)
     {

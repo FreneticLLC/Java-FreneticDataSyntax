@@ -4,16 +4,18 @@
 // See README.md or LICENSE.txt in the FreneticUtilities source root for the contents of the license.
 //
 
-/// <summary>
-/// Represents a FreneticDataSyntax section or file.
-/// </summary>
+package com.freneticllc.freneticutilities.freneticdatasyntax;
+
+/**
+ * Represents a FreneticDataSyntax section or file.
+ */
 public class FDSSection
 {
 
-    /// <summary>
-    /// Constructs the FDS Section from textual data.
-    /// </summary>
-    /// <param name="contents">The contents of the data file.</param>
+    /**
+     * Constructs the FDS Section from textual data.
+     */
+     * @param contents The contents of the data file.
     public FDSSection(string contents)
     {
         StartingLine = 1;
@@ -170,58 +172,58 @@ public class FDSSection
         throw new Exception("[FDS Parsing error] Line " + (linenumber + 1) + ": " + reason + ", from line as follows: `" + line + "`");
     }
 
-    /// <summary>
-    /// Constructs the FDS section from no data, preparing it for usage as a new section.
-    /// </summary>
+    /**
+     * Constructs the FDS section from no data, preparing it for usage as a new section.
+     */
     public FDSSection()
     {
         // Do nothing, we're init'd enough!
     }
 
-    /// <summary>
-    /// The line number this section starts on.
-    /// Note that files start at 1.
-    /// Only accurate at file-load time.
-    /// </summary>
+    /**
+     * The line number this section starts on.
+     * Note that files start at 1.
+     * Only accurate at file-load time.
+     */
     public int StartingLine = 0;
 
-    /// <summary>
-    /// All data contained by this section.
-    /// </summary>
+    /**
+     * All data contained by this section.
+     */
     public Dictionary<string, FDSData> Data = new Dictionary<string, FDSData>();
 
-    /// <summary>
-    /// Lowercase-stored data for this section.
-    /// </summary>
+    /**
+     * Lowercase-stored data for this section.
+     */
     public Dictionary<string, FDSData> DataLowered = new Dictionary<string, FDSData>();
 
-    /// <summary>
-    /// Comments at the end of the section (usually only on the file root section).
-    /// </summary>
+    /**
+     * Comments at the end of the section (usually only on the file root section).
+     */
     public List<string> PostComments = new List<string>();
 
-    /// <summary>
-    /// The section path splitter for this section.
-    /// Will initially hold a value obtained from <see cref="FDSUtility.DefaultSectionPathSplit"/> at instance construction time.
-    /// That field is initially a dot value. Altering that default or this value may cause issues (in particular with escaping) depending on the chosen value.
-    /// </summary>
+    /**
+     * The section path splitter for this section.
+     * Will initially hold a value obtained from "FDSUtility.DefaultSectionPathSplit" at instance construction time.
+     * That field is initially a dot value. Altering that default or this value may cause issues (in particular with escaping) depending on the chosen value.
+     */
     public char SectionPathSplit = FDSUtility.DefaultSectionPathSplit;
 
-    /// <summary>
-    /// Returns the set of all keys at the root of this section.
-    /// </summary>
-    /// <returns>All keys.</returns>
+    /**
+     * Returns the set of all keys at the root of this section.
+     */
+     * @return All keys.
     public IEnumerable<string> GetRootKeys()
     {
         return Data.Keys;
     }
 
-    /// <summary>
-    /// Gets a string from the section. Can stringify non-string values.
-    /// Returns null if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <returns>The data found, or the default.</returns>
+    /**
+     * Gets a string from the section. Can stringify non-string values.
+     * Returns null if not found.
+     */
+     * @param key The key to get data from.
+     * @return The data found, or the default.
     public List<string> GetStringList(string key)
     {
         List<FDSData> dat = GetDataList(key);
@@ -237,12 +239,12 @@ public class FDSSection
         return newlist;
     }
 
-    /// <summary>
-    /// Gets a string from the section. Can stringify non-string values.
-    /// Returns null if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <returns>The data found, or the default.</returns>
+    /**
+     * Gets a string from the section. Can stringify non-string values.
+     * Returns null if not found.
+     */
+     * @param key The key to get data from.
+     * @return The data found, or the default.
     public List<FDSData> GetDataList(string key)
     {
         FDSData got = GetData(key);
@@ -261,13 +263,13 @@ public class FDSSection
         }
     }
 
-    /// <summary>
-    /// Gets a bool from the section.
-    /// Returns def if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <param name="def">The default object.</param>
-    /// <returns>The data found, or the default.</returns>
+    /**
+     * Gets a bool from the section.
+     * Returns def if not found.
+     */
+     * @param key The key to get data from.
+     * @param def The default object.
+     * @return The data found, or the default.
     public bool? GetBool(string key, bool? def = null)
     {
         FDSData got = GetData(key);
@@ -286,13 +288,13 @@ public class FDSSection
         }
     }
 
-    /// <summary>
-    /// Gets a string from the section. Can stringify non-string values.
-    /// Returns def if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <param name="def">The default object.</param>
-    /// <returns>The data found, or the default.</returns>
+    /**
+     * Gets a string from the section. Can stringify non-string values.
+     * Returns def if not found.
+     */
+     * @param key The key to get data from.
+     * @param def The default object.
+     * @return The data found, or the default.
     public string GetString(string key, string def = null)
     {
         FDSData got = GetData(key);
@@ -311,13 +313,13 @@ public class FDSSection
         }
     }
 
-    /// <summary>
-    /// Gets an optional float from the section.
-    /// Returns def if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <param name="def">The default object.</param>
-    /// <returns>The data found, or the default.</returns>
+    /**
+     * Gets an optional float from the section.
+     * Returns def if not found.
+     */
+     * @param key The key to get data from.
+     * @param def The default object.
+     * @return The data found, or the default.
     public float? GetFloat(string key, float? def = null)
     {
         double? asDouble = GetDouble(key, def);
@@ -328,13 +330,13 @@ public class FDSSection
         return null;
     }
 
-    /// <summary>
-    /// Gets an optional double from the section.
-    /// Returns def if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <param name="def">The default object.</param>
-    /// <returns>The data found, or the default.</returns>
+    /**
+     * Gets an optional double from the section.
+     * Returns def if not found.
+     */
+     * @param key The key to get data from.
+     * @param def The default object.
+     * @return The data found, or the default.
     public double? GetDouble(string key, double? def = null)
     {
         FDSData got = GetData(key);
@@ -369,13 +371,13 @@ public class FDSSection
         }
     }
 
-    /// <summary>
-    /// Gets an optional int from the section.
-    /// Returns def if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <param name="def">The default object.</param>
-    /// <returns>The data found, or the default.</returns>
+    /**
+     * Gets an optional int from the section.
+     * Returns def if not found.
+     */
+     * @param key The key to get data from.
+     * @param def The default object.
+     * @return The data found, or the default.
     public int? GetInt(string key, int? def = null)
     {
         long? asLong = GetLong(key, def);
@@ -386,13 +388,13 @@ public class FDSSection
         return null;
     }
 
-    /// <summary>
-    /// Gets an optional long from the section.
-    /// Returns def if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <param name="def">The default object.</param>
-    /// <returns>The data found, or the default.</returns>
+    /**
+     * Gets an optional long from the section.
+     * Returns def if not found.
+     */
+     * @param key The key to get data from.
+     * @param def The default object.
+     * @return The data found, or the default.
     public long? GetLong(string key, long? def = null)
     {
         FDSData got = GetData(key);
@@ -419,13 +421,13 @@ public class FDSSection
         }
     }
 
-    /// <summary>
-    /// Gets an optional ulong from the section.
-    /// Returns def if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <param name="def">The default object.</param>
-    /// <returns>The data found, or the default.</returns>
+    /**
+     * Gets an optional ulong from the section.
+     * Returns def if not found.
+     */
+     * @param key The key to get data from.
+     * @param def The default object.
+     * @return The data found, or the default.
     public ulong? GetUlong(string key, ulong? def = null)
     {
         FDSData got = GetData(key);
@@ -452,13 +454,13 @@ public class FDSSection
         }
     }
 
-    /// <summary>
-    /// Gets an object from the section.
-    /// Returns def if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <param name="def">The default object.</param>
-    /// <returns>The data found, or the default.</returns>
+    /**
+     * Gets an object from the section.
+     * Returns def if not found.
+     */
+     * @param key The key to get data from.
+     * @param def The default object.
+     * @return The data found, or the default.
     public object GetObject(string key, object def = null)
     {
         FDSData got = GetData(key);
@@ -469,23 +471,23 @@ public class FDSSection
         return got.Internal;
     }
 
-    /// <summary>
-    /// Sets data to the section.
-    /// May throw an FDSInputException if Set failed!
-    /// </summary>
-    /// <param name="key">The key to set data from.</param>
-    /// <param name="input">The key to set data to.</param>
+    /**
+     * Sets data to the section.
+     * May throw an FDSInputException if Set failed!
+     */
+     * @param key The key to set data from.
+     * @param input The key to set data to.
     public void Set(string key, object input)
     {
         SetData(key, new FDSData() { Internal = input, PrecedingComments = new List<string>() });
     }
 
-    /// <summary>
-    /// Sets data to the section.
-    /// May throw an FDSInputException if SetData failed!
-    /// </summary>
-    /// <param name="key">The key to set data from.</param>
-    /// <param name="data">The key to set data to.</param>
+    /**
+     * Sets data to the section.
+     * May throw an FDSInputException if SetData failed!
+     */
+     * @param key The key to set data from.
+     * @param data The key to set data to.
     public void SetData(string key, FDSData data)
     {
         int lind = key.LastIndexOf(SectionPathSplit);
@@ -503,21 +505,21 @@ public class FDSSection
         sec.SetRootData(key.Substring(lind + 1), data);
     }
 
-    /// <summary>
-    /// Defaults data to the section (IE, sets it if not present!)
-    /// </summary>
-    /// <param name="key">The key to set data from.</param>
-    /// <param name="input">The key to set data to.</param>
+    /**
+     * Defaults data to the section (IE, sets it if not present!)
+     */
+     * @param key The key to set data from.
+     * @param input The key to set data to.
     public void Default(string key, object input)
     {
         DefaultData(key, new FDSData() { Internal = input, PrecedingComments = new List<string>() });
     }
 
-    /// <summary>
-    /// Defaults data to the section (IE, sets it if not present!)
-    /// </summary>
-    /// <param name="key">The key to set data from.</param>
-    /// <param name="data">The key to set data to.</param>
+    /**
+     * Defaults data to the section (IE, sets it if not present!)
+     */
+     * @param key The key to set data from.
+     * @param data The key to set data to.
     public void DefaultData(string key, FDSData data)
     {
         int lind = key.LastIndexOf(SectionPathSplit);
@@ -542,22 +544,22 @@ public class FDSSection
         }
     }
 
-    /// <summary>
-    /// Checks if a key exists in the FDS section.
-    /// </summary>
-    /// <param name="key">The key to check for.</param>
-    /// <returns>Whether the key is present.</returns>
+    /**
+     * Checks if a key exists in the FDS section.
+     */
+     * @param key The key to check for.
+     * @return Whether the key is present.
     public bool HasKey(string key)
     {
         return GetData(key) != null;
     }
 
-    /// <summary>
-    /// Gets data from the section.
-    /// Returns null if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <returns>The data found, or null.</returns>
+    /**
+     * Gets data from the section.
+     * Returns null if not found.
+     */
+     * @param key The key to get data from.
+     * @return The data found, or null.
     public FDSData GetData(string key)
     {
         int lind = key.LastIndexOf(SectionPathSplit);
@@ -577,12 +579,12 @@ public class FDSSection
         return sec.GetRootData(key.Substring(lind + 1));
     }
 
-    /// <summary>
-    /// Gets data from the section.
-    /// Returns null if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <returns>The data found, or null.</returns>
+    /**
+     * Gets data from the section.
+     * Returns null if not found.
+     */
+     * @param key The key to get data from.
+     * @return The data found, or null.
     public FDSData GetDataLowered(string key)
     {
         key = key.ToLowerFast();
@@ -603,35 +605,35 @@ public class FDSSection
         return sec.GetRootDataLowered(key.Substring(lind + 1));
     }
 
-    /// <summary>
-    /// Gets a sub-section of this FDS section.
-    /// Returns null if not found.
-    /// </summary>
-    /// <param name="key">The key of the section.</param>
-    /// <returns>The subsection.</returns>
+    /**
+     * Gets a sub-section of this FDS section.
+     * Returns null if not found.
+     */
+     * @param key The key of the section.
+     * @return The subsection.
     public FDSSection GetSection(string key)
     {
         return GetSectionInternal(key, true, false);
     }
 
-    /// <summary>
-    /// Gets a sub-section of this FDS section.
-    /// Returns null if not found.
-    /// </summary>
-    /// <param name="key">The key of the section.</param>
-    /// <returns>The subsection.</returns>
+    /**
+     * Gets a sub-section of this FDS section.
+     * Returns null if not found.
+     */
+     * @param key The key of the section.
+     * @return The subsection.
     public FDSSection GetSectionLowered(string key)
     {
         return GetSectionInternal(key.ToLowerFast(), true, true);
     }
 
-    /// <summary>
-    /// Gets a sub-section of this FDS section.
-    /// </summary>
-    /// <param name="key">The key of the section.</param>
-    /// <param name="allowNull">Whether to allow null returns, otherwise enforce the section's existence. If true, can throw an FDSInputException!</param>
-    /// <param name="lowered">Whether to read lowercase section names. If set, expects lowercased input key!</param>
-    /// <returns>The subsection.</returns>
+    /**
+     * Gets a sub-section of this FDS section.
+     */
+     * @param key The key of the section.
+     * @param allowNull Whether to allow null returns, otherwise enforce the section's existence. If true, can throw an FDSInputException!
+     * @param lowered Whether to read lowercase section names. If set, expects lowercased input key!
+     * @return The subsection.
     private FDSSection GetSectionInternal(string key, bool allowNull, bool lowered)
     {
         if (key == null || key.Length == 0)
@@ -665,23 +667,23 @@ public class FDSSection
         return current;
     }
 
-    /// <summary>
-    /// Sets data direct on the root level.
-    /// </summary>
-    /// <param name="key">The key to set data to.</param>
-    /// <param name="data">The data to read.</param>
+    /**
+     * Sets data direct on the root level.
+     */
+     * @param key The key to set data to.
+     * @param data The data to read.
     public void SetRootData(string key, FDSData data)
     {
         Data[key] = data;
         DataLowered[key.ToLowerFast()] = data;
     }
 
-    /// <summary>
-    /// Gets data direct from the root level.
-    /// Returns null if not found.
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <returns>The data found, or null.</returns>
+    /**
+     * Gets data direct from the root level.
+     * Returns null if not found.
+     */
+     * @param key The key to get data from.
+     * @return The data found, or null.
     public FDSData GetRootData(string key)
     {
         if (Data.TryGetValue(key, out FDSData temp))
@@ -691,13 +693,13 @@ public class FDSSection
         return null;
     }
 
-    /// <summary>
-    /// Gets data direct from the root level.
-    /// Returns null if not found.
-    /// Assumes input is already lowercase!
-    /// </summary>
-    /// <param name="key">The key to get data from.</param>
-    /// <returns>The data found, or null.</returns>
+    /**
+     * Gets data direct from the root level.
+     * Returns null if not found.
+     * Assumes input is already lowercase!
+     */
+     * @param key The key to get data from.
+     * @return The data found, or null.
     public FDSData GetRootDataLowered(string key)
     {
         if (DataLowered.TryGetValue(key, out FDSData temp))
@@ -707,12 +709,12 @@ public class FDSSection
         return null;
     }
 
-    /// <summary>
-    /// Converts this FDSSection to a textual representation of itself.
-    /// </summary>
-    /// <param name="tabulation">How many tabs to start with. Generally do not set this.</param>
-    /// <param name="newline">What string to use as a new line. Generally do not set this.</param>
-    /// <returns>The string.</returns>
+    /**
+     * Converts this FDSSection to a textual representation of itself.
+     */
+     * @param tabulation How many tabs to start with. Generally do not set this.
+     * @param newline What string to use as a new line. Generally do not set this.
+     * @return The string.
     public string SaveToString(int tabulation = 0, string newline = null)
     {
         if (newline == null)
