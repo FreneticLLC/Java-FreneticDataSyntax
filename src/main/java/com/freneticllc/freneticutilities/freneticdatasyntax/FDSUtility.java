@@ -96,8 +96,8 @@ public class FDSUtility {
         return unEscape(str.replace("\\d", ".").replace("\\c", ":").replace("\\e", "="));
     }
 
-    public static final Pattern LONG_PATTERN = Pattern.compile("\\d+");
-    public static final Pattern DOUBLE_PATTERN = Pattern.compile("\\d+(\\.\\d+)?");
+    public static final Pattern LONG_PATTERN = Pattern.compile("-?\\d+");
+    public static final Pattern DOUBLE_PATTERN = Pattern.compile("-?\\d+(\\.\\d+)?([eE][-+]?\\d+)?");
 
     /**
      * Interprets the type of the input text.
