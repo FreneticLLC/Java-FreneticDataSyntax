@@ -7,7 +7,7 @@
     <groupId>com.freneticllc.freneticutilities</groupId>
     <artifactId>freneticdatasyntax</artifactId>
     <packaging>jar</packaging>
-    <version>1.0</version>
+    <version>1.1</version>
     <name>FreneticDataSyntax</name>
     <description>An implementation of a special data syntax, similar to YAML</description>
 
